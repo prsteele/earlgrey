@@ -1,0 +1,9 @@
+* {
+    margin: 0px 0px 0px 0px;
+    padding: 0px 0px 0px 0px;
+}
+
+.column {
+    float: left;
+    width: 50%;
+}

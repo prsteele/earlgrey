@@ -1,4 +1,4 @@
-(function () {
+var earldoc = (function () {
     var start_comment = P.word("/**");
     var end_comment = P.word("*/");
     var star = P.word("*");
@@ -12,9 +12,11 @@
                          P.many(P.or(not_star, star_not_end_comment)),
                          P.skip(end_comment));
 
-    var not_comment = P.plus(P.many(P.or(not_slash, slash_not_start_comment)));
+    var not_comment = P.many1(P.or(not_slash, slash_not_start_comment));
 
-    var comments = P.separated_by(comment, not_comment);
+    var comments = P.plus(P.skip(P.maybe(not_comment)),
+                          P.maybe(P.separated_by(comment, not_comment)),
+                          P.skip(P.maybe(not_comment)));
 
     var parse = function (text) {
         var b = new P.Body("TestJS", text);
@@ -29,9 +31,7 @@
         return result;
     };
 
-    return {
-        parse: parse
-    };
+    return parse;
 })();
 
 /*global P*/
