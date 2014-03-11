@@ -7,26 +7,48 @@
  * parsers are language-agnostic, this library was written for parsing
  * Scheme.
  *
+ * **Note**: We make use of Haskell's type notation in comments, if
+ * not rigorously. In particular, (without working for it) Javascript
+ * doesn't support currying, and so we abuse the Haskell notation by
+ * grouping several types together whenever they need to be applied
+ * together. As a contrived example, consider the following.
+ *
+ *     var f = function (a, b) {
+ *         return function (c) {
+ *             return a + b + c;
+ *         };
+ *     };
+ *
+ * Assuming we intend for `a`, `b`, and `c` to be floats, we would say
+ * the type signature of `f` is `(float, float) -> float -> float`.
+ *
+ * Javascript supports functions with no arguments. We denote this by
+ * `-> a`. Javascript also supports functions which return no value;
+ * this is indicated with `... ->`. Thus, a method of an object which
+ * mutates it in-place and returns no value will have type `->`.
+ *
  * Parsers
  * -------
  *
- * A small collection of basic parsers generators are provided;
- * documentation is available {{#crossLink "Parser"}} here
- * {{/crossLink}}. New parsers can easily be defined and used with
- * this library without extending existing types; all parsers are
- * duck-typed, and no interface is required beyond the input and
- * output types.
+ * We define a parser as any function that accepts a `State` and
+ * returns a `Result`; that is, a function of type `State ->
+ * Result`. We define a small collection of basic parsers and parser
+ * generators (of type `a -> Result -> State`). New parsers can be
+ * defined with parser combinators (discussed below) or simply by
+ * defining any function of the appropriate type.
+ *
+ * Formally, we define the parser type as
+ *     type Parser a = State -> Result (Maybe a)
  *
  * Parser combinators
  * ------------------
  *
- * The parsers above can be combined to produce more complex parsers
- * through the use of parser combinators. A number of combinators are
- * provided which can be used to define a rich set of parsers;
- * documentation for parser combinators is found {{#crossLink
- * "ParserCombinator"}} here {{/crossLink}}. Like parsers, parser
- * combinators are duck-typed and so new combinators can be defined
- * and used with this library without extending existing combinators.
+ * A parser combinator is any function that, when given one or more
+ * parsers as input, produces a new parser; that is, any function of
+ * type `Parser -> Parser`, `(Parser, Parser) -> Parser`, etc. We
+ * provide a number of parser combinators that can be used to define a
+ * rish set of parsers. Like parsers, a new parser combinators can be
+ * defined simply by defining any function of the appropriate type.
  *
  * Example
  * -------
@@ -70,13 +92,69 @@
 var P = (function () {
 
     /**
+     * ## `Maybe`
+     *
+     * A `Maybe` value represents a value that can either have some
+     * value or no value.
+     */
+    var Maybe = function (has_value, value) {
+        this.has_value = has_value;
+        this.value = value;
+    };
+
+    /**
+     * ## `Maybe.map`
+     *
+     * Apply a function to the stored value, if any.
+     *
+     * ### Type
+     *
+     *     Maybe.map :: (a -> b) -> Maybe a -> Maybe b
+     */
+    Maybe.prototype.map = function (f) {
+        if (this.has_value) {
+            this.value = f(this.value);
+        }
+
+        return this;
+    };
+
+   /**
+     * ## `Just`
+     *
+     * A constructor for `Maybe` values that store a value.
+     */
+    var Just = function (x) {
+        this.has_value = true;
+        this.value = x;
+    };
+    Just.prototype = new Maybe();
+
+    /**
+     * ## `None`
+     *
+     * A `Maybe` that stores no value.
+     *
+     */
+    var None = new Maybe(false, null);
+    
+    /**
+     * ## `just`
+     *
+     * Constructs a new `Maybe` value that stores the given value.
+     *
+     * ### Type
+     *
+     *     just :: a -> Just a
+     */
+    var just = function (x) {
+        return new Maybe(true, x);
+    };
+
+    /**
+     * ## `Body`
+     *
      * A body of text to be parsed.
-     *
-     * @param name {string} The name of the body of text to be parsed.
-     * @param text {string} The actual text to be parsed.
-     *
-     * @class Body
-     * @constructor
      */
     var Body = function (name, text) {
         this.name = name;
@@ -85,14 +163,14 @@ var P = (function () {
     };
 
     /**
-     * Accesses the character at position `i`. Returns the empty
-     * string if `i` is out-of-bounds.
+     * ## `Body.at`
      *
-     * @param i {int} The index of the character to return.
-     * @return {string} The character at the index, or the empty
-     * string.
+     * Returns the character at position `i`, or the empty string if
+     * `i` is out-of-bounds.
      *
-     * @function at
+     * ### Type
+     *
+     *     Body.at :: Number -> String
      */
     Body.prototype.at = function (i) {
         if (i < this.len) {
@@ -102,12 +180,9 @@ var P = (function () {
     };
 
     /**
-     * A State represents the current state of a parse of a Body.
+     * ## `State`
      *
-     * @param {Body} body The Body corresponding to this State.
-     *
-     * @class State
-     * @constructor
+     * A `State` represents the position of a parse in a `Body`.
      */
     var State = function (body) {
         this.body = body;
@@ -116,22 +191,27 @@ var P = (function () {
     };
 
     /**
-     * Returns a string representation of the State.
+     * ## `State.toString`
      *
-     * @return {string} a string representation of the State.
+     * Returns a `String` representation of this object.
      *
-     * @function toString
+     * ### Type
+     *
+     *     State.toString :: -> String
      */
     State.prototype.toString = function () {
         return this.body.name + ": " + this.pos + " [" + this.cur + "]";
     };
 
     /**
-     * Returns a shallow copy of the current State, suitable for
-     * creating State objects that can be safely modified by child
-     * parsers.
+     * ## `State.copy`
      *
-     * @function
+     * Returns a shallow copy of the `State`, suitable for creating
+     * `State` objects that can be safely modified by child parsers.
+     *
+     * ### Type
+     *
+     *     State.copy :: -> State
      */
     State.prototype.copy = function () {
         var s = new State(this.body);
@@ -141,9 +221,13 @@ var P = (function () {
     };
 
     /**
-     * Consume one unit of input.
+     * ## `State.advance`
      *
-     * @function
+     * Consumes one unit of input in the `State`.
+     *
+     * ### Type
+     *
+     *     State.advance :: ->
      */
     State.prototype.advance = function () {
         this.pos += 1;
@@ -151,9 +235,13 @@ var P = (function () {
     };
 
     /**
-     * Consume n units of input.
+     * ## `State.advance_by`
      *
-     * @function advance_by
+     *Consume `n` units of input in the `State`.
+     *
+     * ### Type
+     *
+     *     State.advance_by :: Number ->
      */
     State.prototype.advance_by = function (n) {
         this.pos += n;
@@ -161,13 +249,14 @@ var P = (function () {
     };
 
     /**
-     * The result of a parse.
+     * ## `Result`
      *
-     * @class Result
-     * @constructor
-     * @param {bool} success Was the parse successful?
-     * @param {array} result A list of results.
-     * @param {State} state The State after the parse.
+     * Instances of this class represent the result of a parse. When a
+     * parse is successful, the `Result` stores a `Maybe a` value,
+     * where storing `none` indicates that no value was returned, and
+     * the `.success` attribute will be `true`. When the parse is
+     * unsuccessful, no value (i.e., `null`) is stored and the
+     * `.success` attribute will be `false`.
      */
     var Result = function (success, result, state) {
         this.success = success;
@@ -176,62 +265,67 @@ var P = (function () {
     };
 
     /**
-     * Returns a string representation of the Result.
+     * ## `Result.toString`
      *
-     * @return {string} a string representation of the Result.
+     * Returns a `String` representation of this object.
      *
-     * @function toString
+     * ### Type
+     *
+     *     Result.toString :: -> String
      */
     Result.prototype.toString = function () {
         if (this.success) {
-            return this.result.join("\n");
+            return "" + this.result;
         }
 
         if (this.state.cur == "") {
             return "Failure: unexpected end-of-file";
         }
+        
         return ("Failure: error at character " + this.state.pos
                 + ": unexpected character '" + this.state.cur + "'");
     };
 
-    var failure = function (state) {
-        return new Result(false, [], state);
-    };
-
-    var success = function (result, state) {
-        return new Result(true, result, state);
-    };
-
     /**
-     * Parsers
-     * -------
+     * ## `failure`
      *
-     * **Note**: there is no actual class `Parser`; rather, `Parser`
-     * is used to represent any function with a certain type
-     * signature, and all 'methods' listed are in fact just
-     * functions. This nomenclature is due to a limitation in YUIDoc.
+     * Constructs a failed `Result` at the given `State`.
      *
-     * A parser is a function that takes as input a {{#crossLink
-     * "State"}}`State`{{/crossLink}} and returns a {{#crossLink
-     * "Result"}}`Result`{{/crossLink}}. It is used to consume input
-     * from a {{#crossLink "Body"}}`Body`{{/crossLink}} when the next
-     * sequence of input matches a certain pattern, and consuming no
-     * input otherwise.
+     * ### Type
      *
-     * @class Parser
-     * @static
+     *     failure :: State -> Result None
      */
+    var failure = function (state) {
+        return new Result(false, null, state);
+    };
 
     /**
-     * Creates a {{#crossLink "Parser"}}`Parser`{{/crossLink}} that
-     * matches any single character in a `String`.
+     * ## `success`
      *
-     * @function one_of
-     * @param {String} s
-     * @return {Parser} A parser.
+     * Constructs a successful `Result` with the given value at the
+     * given `State`.
      *
-     * @example
+     * ### Type
+     *
+     *     success :: (a, State) -> Result (Just a)
+     */
+    var success = function (result, state) {
+        return new Result(true, just(result), state);
+    };
+
+    /**
+     * ## `one_of`
+     *
+     * A parser generator that produces parsers which match one of any
+     * character in a string.
+     *
+     * ### Example
+     *
      *     var lower = one_of("abcdefghijklmnopqrstuvwxyz");
+     *
+     * ### Type
+     *
+     *     one_of :: String -> Parser String
      */
     var one_of = function (s) {
         var len = s.length;
@@ -249,16 +343,18 @@ var P = (function () {
     };
 
     /**
-     * Creates a {{#crossLink "Parser"}}`Parser`{{/crossLink}} that
-     * matches any single character not in a `String`. Will not match
-     * the empty string `""`.
+     * ## `none_of`
      *
-     * @function none_of
-     * @param {String} s
-     * @return {Parser} A parser.
+     * A parser generator that produces parsers which match one of any
+     * character not in a String.
      *
-     * @example
-     *     var visible_char = none_of(" \n\t\r\f");
+     * ### Example
+     *
+     *     var visible = none_of(" \t\n\r\f");
+     *
+     * ### Type
+     *
+     *     none_of :: String -> Parser String
      */
     var none_of = function (s) {
         var len = s.length;
@@ -283,12 +379,18 @@ var P = (function () {
     };
 
     /**
-     * Creates a {{#crossLink "Parser"}}`Parser`{{/crossLink}} that
-     * matches a `String` exactly.
+     * ## `word`
      *
-     * @function word
-     * @param {String} s
-     * @return {Parser} A parser.
+     * A parser generator that produces parsers which match a String
+     * exactly.
+     *
+     * ### Example
+     *
+     *     var my_name = word("Patrick");
+     *
+     * ### Type
+     *
+     *     word :: String -> Parser String
      */
     var word = function (s) {
         var len = s.length;
@@ -306,45 +408,30 @@ var P = (function () {
     };
 
     /**
-     * A {{#crossLink "Parser"}}`Parser`{{/crossLink}} that
-     * matches any single nonempty character; it is
-     * equivalent to `none_of("")`.
+     * ## `any`
      *
-     * @function any
-     * @param {State} s
-     * @return {Result} The result of the parse.
+     * A parser that matches any single character. This parser can
+     * only fail if there is no input left to consume.
+     *
+     * ### Type
+     *
+     *     any :: Parser String
      */
     var any = none_of("");
 
     /**
-     * Parser combinators
-     * ------------------
+     * ## `many`
      *
-     * A parser combinator is a function that takes as input one or
-     * more {{#crossLink "Parser"}}`Parser`s{{/crossLink}} and returns
-     * a new `Parser`.
+     * A parser combinator that creates parsers which match a parser
+     * zero or more times.
      *
-     * Parser combinators allow individual parsers to be used as
-     * building blocks to form more complex parsers.
+     * ### Example
      *
-     * **Note**: there is no actual class `ParserCombinator`; rather,
-     * `ParserCombinator` is used to represent any function with a
-     * certain type signature, and all 'methods' lsited are in fact
-     * just functions. This nomenclature is due to a limitatinon in
-     * YUIDoc.
+     *     var how_exciting = many(word("!"));
      *
-     * @class ParserCombinator
-     * @static
+     * ### Type
      *
-     */
-
-    /**
-     * Creates a {{#crossLink "Parser"}}`Parser`{{/crossLink}} that
-     * matches zero or more of the provided `Parser`.
-     *
-     * @function many
-     * @param {Parser} p
-     * @return {Parser} A new parser.
+     *     many :: Parser a -> Parser [a]
      */
     var many = function (p) {
         return function (state) {
@@ -356,7 +443,10 @@ var P = (function () {
                 var ret = p(s);
 
                 if (ret.success) {
-                    results = results.concat(ret.result);
+                    if (ret.result.has_value) {
+                        results.push(ret.result.value);
+                    }
+
                     state = ret.state;
                 } else {
                     halt = true;
@@ -368,15 +458,19 @@ var P = (function () {
     };
 
     /**
-     * Creates a {{#crossLink "Parser"}}`Parser`{{/crossLink}} that
-     * matches a sequence of `Parser`s in order. Accepts any number of
-     * arguments.
+     * ## `plus`
      *
-     * @function plus
-     * @param {Parser} p1
-     * @param {Parser} p2
-     * @param {Parser} ...
-     * @return {Parser} A new parser.
+     * A parser combinator that creates a parser which matches a
+     * sequence of parsers.
+     *
+     * ### Example
+     *
+     *     var _word = many(one_of("abcdefghijklmnopqrstuvwxyz"));
+     *     var word_pair = plus(_word, word(" "), _word);
+     *
+     * ### Type
+     *
+     *     plus :: (Parser a, Parser b, ...) -> Parser [a, b, ...]
      */
     var plus = function () {
         var _args = arguments;
@@ -394,7 +488,9 @@ var P = (function () {
                     return ret;
                 }
 
-                results = results.concat(ret.result);
+                if (ret.result.has_value) {
+                    results = results.concat(ret.result.value);
+                }
                 state = ret.state;
             }
 
@@ -403,67 +499,76 @@ var P = (function () {
     };
 
     /**
-     * Creates a {{#crossLink "Parser"}}`Parser`{{/crossLink}} that
-     * matches the first `Parser` in an ordered sequence of
-     * alternatives. Accepts any number of arguments.
+     * ## `or`
      *
-     * @function or
-     * @param {Parser} p1
-     * @param {Parser} p2
-     * @param {Parser} ...
-     * @return {Parser} A new parser.
+     * A parser combinator that creates a parser which matches the
+     * first of several alternatives to succeed.
+     *
+     * ### Example
+     *
+     *     var a_or_b = or(word("a"), word("b"));
+     *
+     * ### Type
+     *
+     *     plus :: (Parser a, Parser b, ...) -> Parser a|b|...
      */
     var or = function () {
         var _args = arguments;
         var _len = arguments.length;
 
         return function (state) {
-            // Track the deepest we manage to parse, so if we fail we
-            // give a more informative error message.
-            var deepest = null;
+            var last = null;
             for (var i = 0; i < _len; i++) {
                 var s = state.copy();
                 var p = _args[i];
                 var ret = p(s);
 
                 if (ret.success) {
-                    return success([ret.result], ret.state);
+                    return ret;
                 } else {
-                    if (deepest == null || ret.state.pos > deepest.state.pos) {
-                        deepest = ret;
-                    }
+                    last = ret;
                 }
             }
 
-            return deepest;
+            // If we didn't match anything, return the last failed result
+            return last;
         };
     };
 
     /**
-     * Creates a {{#crossLink "Parser"}}`Parser`{{/crossLink}} that
-     * matches one or more of the provided `Parser`. The parser
+     * ## `many`
      *
-     *     var ex = many1(p);
+     * A parser combinator that creates parsers which match a parser
+     * one or more times.
      *
-     * could be equivalently defined as
+     * ### Example
      *
-     *     var ex = plus(p, many(p));
+     *     var how_exciting = many(word("!"));
      *
-     * @function many1
-     * @param {Parser} p
-     * @return {Parser} A new parser.
+     * ### Type
+     *
+     *     many :: Parser a -> Parser [a]
      */
     var many1 = function (p) {
         return plus(p, many(p));
     };
 
     /**
-     * Creates a {{#crossLink "Parser"}}`Parser`{{/crossLink}} that
-     * matches the provided `Parser`, but throws away the result.
+     * ## `skip`
      *
-     * @function skip
-     * @param {Parser} p
-     * @return {Parser} A new parser.
+     * A parser combinator that creates a parser that matches another
+     * parser but throws away the result.
+     *
+     * ### Example
+     *
+     *     // This parser will extract a single character from inside
+     *     // parentheses
+     *     var inside = plus(skip(word("(")), any, skip(word(")")));
+     *
+     * ### Type
+     *
+     *     skip :: Parser a -> Parser none
+     *
      */
     var skip = function (p) {
         return function (state) {
@@ -473,7 +578,7 @@ var P = (function () {
                 return result;
             }
 
-            return success([], result.state);
+            return success(none, result.state);
         };
     };
 
@@ -493,30 +598,56 @@ var P = (function () {
      * @param {Parser} q The `Parser` to skip.
      * @return {Parser} A new parser.
      */
+
+    /**
+     * ## `separated_by`
+     *
+     * Creates a parser that matches zero or more of one parser with
+     * each copy separated by a match of another. The parser
+     *
+     *     var ex = separated_by(p, q);
+     *
+     * is equivalent to
+     *
+     *     var ex = plus(p, many(plus(skip(q), p)));
+     *
+     * ### Example
+     *
+     * var alt = separated_by(word("!"), word("?")); // Matches "!?!?!"
+     *
+     * ### Type
+     *
+     *     separated_by :: Parser a -> Parser b -> Parser [a|b]
+     */
     var separated_by = function (p, q) {
         return plus(p, many(plus(skip(q), p)));
     };
 
     /**
-     * Creates a {{#crossLink "Parser"}}`Parser`{{/crossLink}} that
-     * either matches zero or one of a `Parser`.
+     * ## `option`
      *
-     * **Note**: any `Parser` returned by `maybe` can always succeed
-     * by matching zero instances of the original parser.
+     * Creates a parser that matches zero or one of a given parser. If
+     * the parser cannot be matched, the result will store `None`,
+     * otherwise it will store a `Just`.
      *
-     * @function maybe
-     * @param {Parser} p
-     * @return {Parser} A new parser.
+     * ### Example
+     *
+     *     var optional_sign = plus(option(one_of("+-")),
+     *                              many1(one_of("0123456789")));
+     *
+     * ### Type
+     *
+     *     option :: Parser a -> Parser a
      */
-    var maybe = function (p) {
+    var option = function (p) {
         return function (state) {
             var result = p(state.copy());
 
             if (result.success == false) {
-                return success([], state);
+                return new Result(true, None);
             }
 
-            return result;
+            return success(result.result, result.state);
         };
     };
 
@@ -532,6 +663,28 @@ var P = (function () {
      * @param {Parser} p
      * @return {Parser} A new parser.
      */
+
+    /**
+     * ## `peek`
+     *
+     * Creates a Parser that consumes no input on success. On failure,
+     * state *is* consumed to allow for useful error messages;
+     * however, this behavior is the same as all other parsers, and so
+     * backtracking will still work.
+     *
+     * ### Example
+     *
+     *     var followed_by_x = plus(p, peek(word("x")));
+     *
+     * ### Note
+     *
+     * If a `peek`-created parser will succeed once, it will succeed
+     * (infinitely) many times; be careful with `many` and `many1`.
+     *
+     * ### Type
+     *
+     *     peek :: Parser a -> Parser a
+     */
     var peek = function (p) {
         return function (state) {
             var result = p(state.copy());
@@ -543,6 +696,56 @@ var P = (function () {
             result.state = state;
             return result;
         };
+    };
+
+    /**
+     * ## `prepare`
+     *
+     * A convenience function for creating a Body and State for some
+     * text.
+     *
+     * ### Example
+     *
+     *     var result = many("!")(prepare("!!"));
+     *
+     * ### Type
+     *
+     *     prepare :: String -> State
+     */
+    var prepare = function (text) {
+        var b = new Body("", text);
+        var s = new State(b);
+        return s;
+    };
+
+    /**
+     * ## `lift`
+     *
+     * Takes in a function `f :: a -> b` and returns a function `g ::
+     * Parser a -> Parser b`.
+     *
+     * ### Type
+     *
+     *     lift :: (a -> b) -> (Parser a -> Parser b)
+     */
+    var lift = function (f) {
+        return function (p) {
+            return function (state) {
+                return p(state).map(f);
+            };
+        };
+    };
+
+    /**
+     * Creates a function to join an array of strings together
+     * separated by a separator.
+     *
+     * String -> Result [String] -> Result String.
+     */
+    var join = function (sep) {
+        return lift(function (arr) {
+            return arr.join(sep);
+        });
     };
 
     return {
@@ -560,8 +763,11 @@ var P = (function () {
         many1: many1,
         separated_by: separated_by,
         skip: skip,
-        maybe: maybe,
+        option: option,
         any: any,
-        peek: peek
+        peek: peek,
+        prepare: prepare,
+        join: join,
+        lift: lift
     };
 })();
