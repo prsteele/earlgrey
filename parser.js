@@ -1,17 +1,19 @@
 /**
- * ParserLib
- * =========
+ * # ParserLib
  *
  * ParserLib defines a small library of parsers and parser combinators
  * for use in top-down, recursive-descent parsing. Although these
  * parsers are language-agnostic, this library was written for parsing
  * Scheme.
  *
- * **Note**: We make use of Haskell's type notation in comments, if
- * not rigorously. In particular, (without working for it) Javascript
- * doesn't support currying, and so we abuse the Haskell notation by
- * grouping several types together whenever they need to be applied
- * together. As a contrived example, consider the following.
+ * ## Type annotations
+ *
+ * We use a type annotation system inspired by Haskell's, with
+ * modifications to accomodate for Javascript's nonpure
+ * behavior. Since Javascript doesn't support currying (without
+ * significant effort), we indicate functions of more than one
+ * variable using tuple notation. As a contrived example, consider the
+ * following.
  *
  *     var f = function (a, b) {
  *         return function (c) {
@@ -23,12 +25,34 @@
  * the type signature of `f` is `(float, float) -> float -> float`.
  *
  * Javascript supports functions with no arguments. We denote this by
- * `-> a`. Javascript also supports functions which return no value;
- * this is indicated with `... ->`. Thus, a method of an object which
- * mutates it in-place and returns no value will have type `->`.
+ * having no type before the arrow. For example,
  *
- * Parsers
- * -------
+ *     var f = function () {
+ *         return 0;
+ *     };
+ *
+ * would have type `-> Number`.
+ *
+ * Javascript supports functions with no return type. We denote this
+ * by having no type after the arrow. For example, in
+ *
+ *     var count = 0;
+ *     var add_to = function (x) {
+ *         count += x;
+ *     };
+ *
+ * the function `add_to` would have type `Number ->`.
+ *
+ * These two notations can be combined. For example, in
+ *
+ *     var count = 0;
+ *     var inc = function () {
+ *         count += 1;
+ *     };
+ *
+ * the function `inc` would have type `->`.
+ *
+ * ## Parsers
  *
  * We define a parser as any function that accepts a `State` and
  * returns a `Result`; that is, a function of type `State ->
@@ -148,7 +172,7 @@ var P = (function () {
      *     just :: a -> Just a
      */
     var just = function (x) {
-        return new Maybe(true, x);
+        return new Just(x);
     };
 
     /**
@@ -296,7 +320,7 @@ var P = (function () {
      *     failure :: State -> Result None
      */
     var failure = function (state) {
-        return new Result(false, null, state);
+        return new Result(false, None, state);
     };
 
     /**
@@ -334,7 +358,7 @@ var P = (function () {
             for (var i = 0; i < len; i++) {
                 if (cur == s[i]) {
                     state.advance();
-                    return success([cur], state);
+                    return success(cur, state);
                 }
             }
 
@@ -374,7 +398,7 @@ var P = (function () {
             }
 
             state.advance();
-            return success([cur], state);
+            return success(cur, state);
         };
     };
 
@@ -400,7 +424,7 @@ var P = (function () {
 
             if (state.body.text.slice(a, b) === s) {
                 state.advance_by(len);
-                return success([s], state);
+                return success(s, state);
             }
 
             return failure(state);
@@ -531,7 +555,7 @@ var P = (function () {
             }
 
             // If we didn't match anything, return the last failed result
-            return last;
+            return failure(state);
         };
     };
 
@@ -578,7 +602,7 @@ var P = (function () {
                 return result;
             }
 
-            return success(none, result.state);
+            return new Result(true, None, result.state);
         };
     };
 
@@ -644,10 +668,10 @@ var P = (function () {
             var result = p(state.copy());
 
             if (result.success == false) {
-                return new Result(true, None);
+                return new Result(true, None, result.state);
             }
 
-            return success(result.result, result.state);
+            return result;
         };
     };
 
@@ -731,27 +755,19 @@ var P = (function () {
     var lift = function (f) {
         return function (p) {
             return function (state) {
-                return p(state).map(f);
+                return p(state).result.map(f);
             };
         };
-    };
-
-    /**
-     * Creates a function to join an array of strings together
-     * separated by a separator.
-     *
-     * String -> Result [String] -> Result String.
-     */
-    var join = function (sep) {
-        return lift(function (arr) {
-            return arr.join(sep);
-        });
     };
 
     return {
         Body: Body,
         State: State,
         Result: Result,
+        Maybe: Maybe,
+        None: None,
+        Just: Just,
+        just: just,
         failure: failure,
         success: success,
         one_of: one_of,
@@ -767,7 +783,6 @@ var P = (function () {
         any: any,
         peek: peek,
         prepare: prepare,
-        join: join,
         lift: lift
     };
 })();
