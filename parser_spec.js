@@ -16,7 +16,7 @@ describe("Classes", function () {
     });
 
     describe("Maybe", function () {
-        
+
         var just;
         var none;
 
@@ -77,7 +77,7 @@ describe("Classes", function () {
 
     describe("Body", function () {
         it("constructs", function () {
-            // beforeEach didn't throw
+            expect(true).toBeTruthy();// beforeEach didn't throw
         });
 
         it("stores text", function () {
@@ -99,7 +99,7 @@ describe("Classes", function () {
 
     describe("State", function () {
         it("constructs", function () {
-            // beforeEach didn't throw
+            expect(true).toBeTruthy();// beforeEach didn't throw
         });
 
         it("copies", function () {
@@ -134,7 +134,7 @@ describe("Classes", function () {
 
     describe("Result", function () {
         it("constructs", function () {
-            // beforeEach didn't throw
+            expect(true).toBeTruthy();// beforeEach didn't throw
         });
 
         it("can be successful", function () {
@@ -153,7 +153,7 @@ describe("Classes", function () {
             expect(result.success).toBeFalsy();
             expect(result.result).toBe(P.None);
         });
-        
+
         it("can be constructed with success", function () {
             var result = P.success(8, state);
             expect(result.success).toBeTruthy();
@@ -250,7 +250,7 @@ describe("Parsers", function () {
             var result = P.none_of("t")(state);
             expect(result.success).toBeFalsy();
             expect(result.result.has_value).toBeFalsy();
-            expect(result.state.pos).toEqual(0);            
+            expect(result.state.pos).toEqual(0);
         });
     });
 
@@ -329,7 +329,154 @@ describe("Parsers", function () {
             expect(result.state.pos).toEqual(12);
         });
     });
+
+    describe("plus", function () {
+        it("matches one parser", function () {
+            var p1 = P.word("test");
+
+            var result = P.plus(p1)(state);
+
+            expect(result.success).toBeTruthy();
+            expect(result.result.has_value).toBeTruthy();
+            expect(result.result.value).toEqual(["test"]);
+            expect(result.state.pos).toEqual(4);
+        });
+
+        it("matches many parsers", function () {
+            var p1 = P.word("test");
+            var p2 = P.word(" ");
+            var p3 = P.word("text");
+
+            var result = P.plus(p1, p2, p3)(state);
+
+            expect(result.success).toBeTruthy();
+            expect(result.result.has_value).toBeTruthy();
+            expect(result.result.value).toEqual(["test", " ", "text"]);
+            expect(result.state.pos).toEqual(9);
+        });
+
+        it("can fail on one parser", function () {
+            var p1 = P.word("tset");
+
+            var result = P.plus(p1)(state);
+
+            expect(result.success).toBeFalsy();
+            expect(result.result.has_value).toBeFalsy();
+            expect(result.state.pos).toEqual(0);
+        });
+
+        it("can fail on the first of many parsers", function () {
+            var p1 = P.word("tset");
+            var p2 = P.word(" ");
+            var p3 = P.word("text");
+
+            var result = P.plus(p1, p2, p3)(state);
+
+            expect(result.success).toBeFalsy();
+            expect(result.result.has_value).toBeFalsy();
+            expect(result.state.pos).toEqual(0);
+        });
+
+        it("can fail in the middle of many parsers", function () {
+            var p1 = P.word("test");
+            var p2 = P.word("-");
+            var p3 = P.word("text");
+
+            var result = P.plus(p1, p2, p3)(state);
+
+            expect(result.success).toBeFalsy();
+            expect(result.result.has_value).toBeFalsy();
+            expect(result.state.pos).toEqual(4); // We parsed some values
+        });
+
+        it("can fail at the end of many parsers", function () {
+            var p1 = P.word("test");
+            var p2 = P.word(" ");
+            var p3 = P.word("txet");
+
+            var result = P.plus(p1, p2, p3)(state);
+
+            expect(result.success).toBeFalsy();
+            expect(result.result.has_value).toBeFalsy();
+            expect(result.state.pos).toEqual(5); // We parsed some values
+        });
+
+    });
+
+    describe("or", function () {
+        it("can match with one alternative", function () {
+            var p1 = P.word("test");
+
+            var result = P.or(p1)(state);
+
+            expect(result.success).toBeTruthy();
+            expect(result.result.has_value).toBeTruthy();
+            expect(result.result.value).toEqual("test");
+            expect(result.state.pos).toEqual(4);
+        });
+
+        it("can match the first of many alternatives", function () {
+            var p1 = P.word("test");
+            var p2 = P.word(" ");
+            var p3 = P.word("text");
+
+            var result = P.or(p1, p2, p3)(state);
+
+            expect(result.success).toBeTruthy();
+            expect(result.result.has_value).toBeTruthy();
+            expect(result.result.value).toEqual("test");
+            expect(result.state.pos).toEqual(4);
+        });
+
+        it("can match in the middle of many alternatives", function () {
+            var p1 = P.word("test");
+            var p2 = P.word(" ");
+            var p3 = P.word("text");
+
+            var result = P.or(p3, p1, p2)(state);
+
+            expect(result.success).toBeTruthy();
+            expect(result.result.has_value).toBeTruthy();
+            expect(result.result.value).toEqual("test");
+            expect(result.state.pos).toEqual(4);
+        });
+
+        it("can match at the end of many alternatives", function () {
+            var p1 = P.word("test");
+            var p2 = P.word(" ");
+            var p3 = P.word("text");
+
+            var result = P.or(p2, p3, p1)(state);
+
+            expect(result.success).toBeTruthy();
+            expect(result.result.has_value).toBeTruthy();
+            expect(result.result.value).toEqual("test");
+            expect(result.state.pos).toEqual(4);
+        });
+
+        it("can fail with one alternative", function () {
+            var p1 = P.word("tset");
+
+            var result = P.or(p1)(state);
+
+            expect(result.success).toBeFalsy();
+            expect(result.result.has_value).toBeFalsy();
+            expect(result.state.pos).toEqual(0);
+        });
+
+        it("can fail with many alternatives", function () {
+            var p1 = P.word("tset");
+            var p2 = P.word("-");
+            var p3 = P.word("txet");
+
+            var result = P.or(p1, p2, p3)(state);
+
+            expect(result.success).toBeFalsy();
+            expect(result.result.has_value).toBeFalsy();
+            expect(result.state.pos).toEqual(0);
+        });
+    });
 });
 
 /*global describe it beforeEach expect
-/* P */
+ /* P */
