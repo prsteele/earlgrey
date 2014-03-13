@@ -513,7 +513,7 @@ var P = (function () {
                 }
 
                 if (ret.result.has_value) {
-                    results = results.concat(ret.result.value);
+                    results.push(ret.result.value);
                 }
                 state = ret.state;
             }
@@ -574,7 +574,22 @@ var P = (function () {
      *     many :: Parser a -> Parser [a]
      */
     var many1 = function (p) {
-        return plus(p, many(p));
+        var f = lift(function (li) {
+            if (li.length == 2) {
+                return [li[0]].concat(li[1]);
+            } else {
+                // p is skip. Return the empty list. To see this, note
+                // that if the first p doesn't match, then the plus
+                // fails and this function won't get called. Thus, the
+                // first p matched, and so many(p) returned at least
+                // []. If p is a skip, then plus will aggregate only a
+                // single value -- [] -- after discarding the result
+                // of the first p.
+                return [];
+            }
+        });
+
+        return f(plus(p, many(p)));
     };
 
     /**
@@ -607,44 +622,46 @@ var P = (function () {
     };
 
     /**
-     * Creates a {{#crossLink "Parser"}}`Parser`{{/crossLink}} that
-     * matches zero or more of provided `Parser`, consuming and
-     * skipping another parser in between each. The parser
-     *
-     *     var ex = separated_by(p, q);
-     *
-     * is equivalent to
-     *
-     *     var ex = plus(p, many(plus(skip(q), p)));
-     *
-     * @function separated_by
-     * @param {Parser} p The `Parser` to match.
-     * @param {Parser} q The `Parser` to skip.
-     * @return {Parser} A new parser.
-     */
-
-    /**
      * ## `separated_by`
      *
-     * Creates a parser that matches zero or more of one parser with
-     * each copy separated by a match of another. The parser
-     *
-     *     var ex = separated_by(p, q);
-     *
-     * is equivalent to
-     *
-     *     var ex = plus(p, many(plus(skip(q), p)));
+     * Creates a parser that matches one or more of one parser with
+     * each copy separated by a match of another.
      *
      * ### Example
      *
-     * var alt = separated_by(word("!"), word("?")); // Matches "!?!?!"
+     * // Matches "!","!?!", "!?!?!", ...
+     * var alt = separated_by(word("!"), word("?")); 
      *
      * ### Type
      *
-     *     separated_by :: Parser a -> Parser b -> Parser [a|b]
+     *     separated_by :: Parser a -> Parser b -> Parser [(a|b)]
      */
     var separated_by = function (p, q) {
-        return plus(p, many(plus(skip(q), p)));
+        var flatten = lift(function (li) {
+            var result = [];
+            for (var i = 0; i < li.length; i++) {
+                result = result.concat(li[i]);
+            }
+            return result;
+        });
+
+        var f = lift(function (li) {
+            if (li.length == 2) {
+                return [li[0]].concat(li[1]);
+            } else {
+                // p is skip. Return whatever was in many. To see
+                // this, note that if the first p doesn't match, then
+                // the plus fails and this function won't get
+                // called. Thus, the first p matched, and so
+                // many(plus(p, q)) returned at least []. If p is a
+                // skip, then plus will aggregate only a single value
+                // -- whatever is in the many -- after discarding the
+                // result of the first p.
+                return li[0];
+            }
+        });
+
+        return f(plus(p, flatten(many(plus(q, p)))));
     };
 
     /**
@@ -674,19 +691,6 @@ var P = (function () {
             return result;
         };
     };
-
-    /**
-     * Creates a {{#crossLink "Parser"}}`Parser`{{/crossLink}} that
-     * will attempt to match the given `Parser`, but consumes no input
-     * on success.
-     *
-     * **Note**: if a `peek`-created parser will succeed once, it will
-     * succeed (infinitely) many times; use with caution.
-     *
-     * @function peek
-     * @param {Parser} p
-     * @return {Parser} A new parser.
-     */
 
     /**
      * ## `peek`
@@ -755,7 +759,9 @@ var P = (function () {
     var lift = function (f) {
         return function (p) {
             return function (state) {
-                return p(state).result.map(f);
+                var result = p(state);
+                result.result.map(f);
+                return result;
             };
         };
     };

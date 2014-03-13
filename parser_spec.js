@@ -130,6 +130,17 @@ describe("Classes", function () {
             expect(state.cur).toEqual("s");
             expect(state.pos).toEqual(2);
         });
+
+        describe("prepare", function () {
+            it("prepares text", function () {
+                var s = P.prepare("");
+                expect(s instanceof P.State).toBeTruthy();
+
+                s = P.prepare("asdf");
+                expect(s instanceof P.State).toBeTruthy();
+
+            });
+        });
     });
 
     describe("Result", function () {
@@ -476,7 +487,351 @@ describe("Parsers", function () {
             expect(result.state.pos).toEqual(0);
         });
     });
+
+    describe("many1", function () {
+        it("fails on zero matches", function () {
+            var result = P.many1(P.word("test"))(P.prepare("x"));
+            expect(result.success).toBeFalsy();
+            expect(result.result.has_value).toBeFalsy();
+            expect(result.state.pos).toEqual(0);
+        });
+
+        it("matches once", function () {
+            var result = P.many1(P.word("test"))(P.prepare("testx"));
+            expect(result.success).toBeTruthy();
+            expect(result.result.has_value).toBeTruthy();
+            expect(result.result.value).toEqual(["test"]);
+            expect(result.state.pos).toEqual(4);
+        });
+
+        it("matches many times", function () {
+            var result = P.many1(P.word("test"))(P.prepare("testtesttestx"));
+            expect(result.success).toBeTruthy();
+            expect(result.result.has_value).toBeTruthy();
+            expect(result.result.value).toEqual(["test", "test", "test"]);
+            expect(result.state.pos).toEqual(12);
+        });
+    });
+
+    describe("skip", function () {
+        it("skips matches", function () {
+            var p1 = P.word("test");
+
+            var result = P.skip(p1)(state);
+            expect(result.success).toBeTruthy();
+            expect(result.result.has_value).toBeFalsy();
+            expect(result.state.pos).toEqual(4);
+        });
+
+        it("can fail", function () {
+            var p1 = P.word("tset");
+
+            var result = P.skip(p1)(state);
+            expect(result.success).toBeFalsy();
+            expect(result.result.has_value).toBeFalsy();
+            expect(result.state.pos).toEqual(0);
+        });
+
+        it("plays nicely with plus when first", function () {
+            var p1 = P.word("test");
+            var p2 = P.word(" ");
+            var p3 = P.word("text");
+
+            var result = P.plus(P.skip(p1), p2, p3)(state);
+
+            expect(result.success).toBeTruthy();
+            expect(result.result.has_value).toBeTruthy();
+            expect(result.result.value).toEqual([" ", "text"]);
+            expect(result.state.pos).toEqual(9);
+        });
+
+        it("plays nicely with plus when in the middle", function () {
+            var p1 = P.word("test");
+            var p2 = P.word(" ");
+            var p3 = P.word("text");
+
+            var result = P.plus(p1, P.skip(p2), p3)(state);
+
+            expect(result.success).toBeTruthy();
+            expect(result.result.has_value).toBeTruthy();
+            expect(result.result.value).toEqual(["test", "text"]);
+            expect(result.state.pos).toEqual(9);
+        });
+
+        it("plays nicely with plus when at the end", function () {
+            var p1 = P.word("test");
+            var p2 = P.word(" ");
+            var p3 = P.word("text");
+
+            var result = P.plus(p1, p2, P.skip(p3))(state);
+
+            expect(result.success).toBeTruthy();
+            expect(result.result.has_value).toBeTruthy();
+            expect(result.result.value).toEqual(["test", " "]);
+            expect(result.state.pos).toEqual(9);
+        });
+
+        it("plays nicely with or", function () {
+            var p1 = P.word("test");
+            var p2 = P.word("-");
+            var p3 = P.word("txet");
+
+            var result = P.or(P.skip(p1), p2, p3)(state);
+
+            expect(result.success).toBeTruthy();
+            expect(result.result.has_value).toBeFalsy();
+            expect(result.state.pos).toEqual(4);
+        });
+
+        it("plays nicely with many matching zero times", function () {
+            var p1 = P.word("test");
+
+            var result = P.many(P.skip(p1))(P.prepare("x"));
+
+            expect(result.success).toBeTruthy();
+            expect(result.result.has_value).toBeTruthy();
+            expect(result.result.value).toEqual([]);
+            expect(result.state.pos).toEqual(0);
+        });
+
+        it("plays nicely with many matching one time", function () {
+            var p1 = P.word("test");
+
+            var result = P.many(P.skip(p1))(P.prepare("testx"));
+
+            expect(result.success).toBeTruthy();
+            expect(result.result.has_value).toBeTruthy();
+            expect(result.result.value).toEqual([]);
+            expect(result.state.pos).toEqual(4);
+        });
+
+        it("plays nicely with many matching many times", function () {
+            var p1 = P.word("test");
+
+            var result = P.many(P.skip(p1))(P.prepare("testtesttestx"));
+
+            expect(result.success).toBeTruthy();
+            expect(result.result.has_value).toBeTruthy();
+            expect(result.result.value).toEqual([]);
+            expect(result.state.pos).toEqual(12);
+        });
+
+        it("plays nicely with many1 when failing", function () {
+            var p1 = P.word("test");
+
+            var result = P.many1(P.skip(p1))(P.prepare("x"));
+
+            expect(result.success).toBeFalsy();
+            expect(result.result.has_value).toBeFalsy();
+            expect(result.state.pos).toEqual(0);
+        });
+
+        it("plays nicely with many1 matching one time", function () {
+            var p1 = P.word("test");
+
+            var result = P.many1(P.skip(p1))(P.prepare("testx"));
+
+            expect(result.success).toBeTruthy();
+            expect(result.result.has_value).toBeTruthy();
+            expect(result.result.value).toEqual([]);
+            expect(result.state.pos).toEqual(4);
+        });
+
+        it("plays nicely with many1 matching many times", function () {
+            var p1 = P.word("test");
+
+            var result = P.many1(P.skip(p1))(P.prepare("testtesttestx"));
+
+            expect(result.success).toBeTruthy();
+            expect(result.result.has_value).toBeTruthy();
+            expect(result.result.value).toEqual([]);
+            expect(result.state.pos).toEqual(12);
+        });
+
+        it("plays nicely with separated_by as the first parser", function () {
+            var p = P.skip(P.word("!"));
+            var q = P.word("?");
+
+            var result = P.separated_by(p, q)(P.prepare("!"));
+
+            expect(result.success).toBeTruthy();
+            expect(result.result.has_value).toBeTruthy();
+            expect(result.result.value).toEqual([]);
+            expect(result.state.pos).toEqual(1);
+
+            result = P.separated_by(p, q)(P.prepare("!?!"));
+
+            expect(result.success).toBeTruthy();
+            expect(result.result.has_value).toBeTruthy();
+            expect(result.result.value).toEqual(["?"]);
+            expect(result.state.pos).toEqual(3);
+        });
+
+        it("plays nicely with separated_by as the second parser", function () {
+            var p = P.word("!");
+            var q = P.skip(P.word("?"));
+
+            var result = P.separated_by(p, q)(P.prepare("!"));
+
+            expect(result.success).toBeTruthy();
+            expect(result.result.has_value).toBeTruthy();
+            expect(result.result.value).toEqual(["!"]);
+            expect(result.state.pos).toEqual(1);
+
+            result = P.separated_by(p, q)(P.prepare("!?!"));
+
+            expect(result.success).toBeTruthy();
+            expect(result.result.has_value).toBeTruthy();
+            expect(result.result.value).toEqual(["!", "!"]);
+            expect(result.state.pos).toEqual(3);
+        });
+
+        it("plays nicely with option when matching one time", function () {
+            var p = P.skip(P.word("test"));
+
+            var result = P.option(p)(state);
+            expect(result.success).toBeTruthy();
+            expect(result.result.has_value).toBeFalsy();
+            expect(result.state.pos).toEqual(4);
+        });
+
+        it("plays nicely with option when matching zero times", function () {
+            var p = P.skip(P.word("x"));
+
+            var result = P.option(p)(state);
+            expect(result.success).toBeTruthy();
+            expect(result.result.has_value).toBeFalsy();
+            expect(result.state.pos).toEqual(0);
+        });
+
+        it("plays nicely with peek on success", function () {
+            var result = P.skip(P.peek(P.word("test")))(state);
+
+            expect(result.success).toBeTruthy();
+            expect(result.result.has_value).toBeFalsy();
+            expect(result.state.pos).toEqual(0);            
+        });
+
+        it("plays nicely with peek on failure", function () {
+            var result = P.skip(P.peek(P.word("x")))(state);
+
+            expect(result.success).toBeFalsy();
+            expect(result.result.has_value).toBeFalsy();
+            expect(result.state.pos).toEqual(0);            
+        });
+    });
+
+    describe("separated_by", function () {
+        it("fails on zero repetitions", function () {
+            var p = P.word("!");
+            var q = P.word("?");
+
+            var result = P.separated_by(p, q)(P.prepare("x"));
+
+            expect(result.success).toBeFalsy();
+            expect(result.result.has_value).toBeFalsy();
+            expect(result.state.pos).toEqual(0);
+        });
+
+        it("matches one repetition", function () {
+            var p = P.word("!");
+            var q = P.word("?");
+
+            var result = P.separated_by(p, q)(P.prepare("!"));
+
+            expect(result.success).toBeTruthy();
+            expect(result.result.has_value).toBeTruthy();
+            expect(result.result.value).toEqual(["!"]);
+            expect(result.state.pos).toEqual(1);
+        });
+
+        it("matches two repetitions", function () {
+            var p = P.word("!");
+            var q = P.word("?");
+
+            var result = P.separated_by(p, q)(P.prepare("!?!"));
+
+            expect(result.success).toBeTruthy();
+            expect(result.result.has_value).toBeTruthy();
+            expect(result.result.value).toEqual(["!", "?", "!"]);
+            expect(result.state.pos).toEqual(3);
+        });
+
+        it("matches many repetitions", function () {
+            var p = P.word("!");
+            var q = P.word("?");
+
+            var result = P.separated_by(p, q)(P.prepare("!?!?!"));
+
+            expect(result.success).toBeTruthy();
+            expect(result.result.has_value).toBeTruthy();
+            expect(result.result.value).toEqual(["!", "?", "!", "?", "!"]);
+            expect(result.state.pos).toEqual(5);
+        });
+    });
+
+    describe("option", function () {
+        it("matches zero times", function () {
+            var p = P.word("x");
+
+            var result = P.option(p)(state);
+            expect(result.success).toBeTruthy();
+            expect(result.result.has_value).toBeFalsy();
+            expect(result.state.pos).toEqual(0);
+        });
+
+        it("matches one time", function () {
+            var p = P.word("test");
+
+            var result = P.option(p)(state);
+            expect(result.success).toBeTruthy();
+            expect(result.result.has_value).toBeTruthy();
+            expect(result.result.value).toEqual("test");
+            expect(result.state.pos).toEqual(4);
+        });
+    });
+
+    describe("peek", function () {
+        it("consumes no input on success", function () {
+            var result = P.peek(P.word("test"))(state);
+
+            expect(result.success).toBeTruthy();
+            expect(result.result.has_value).toBeTruthy();
+            expect(result.result.value).toEqual("test");
+            expect(result.state.pos).toEqual(0);
+        });
+
+        it("can fail", function () {
+            var result = P.peek(P.word("x"))(state);
+
+            expect(result.success).toBeFalsy();
+            expect(result.result.has_value).toBeFalsy();
+            expect(result.state.pos).toEqual(0);
+        });
+    });
+
+    describe("lift", function () {
+        it("satisfies its type signature", function () {
+            var p = P.word("test");
+
+            var f = P.lift(function (str) {
+                return 8;
+            });
+
+            var success = f(p)(state);
+            expect(success.success).toBeTruthy();
+            expect(success.result.has_value).toBeTruthy();
+            expect(success.result.value).toEqual(8);
+            expect(success.state.pos).toEqual(4);
+
+            var failure = f(p)(P.prepare("x"));
+            expect(failure.success).toBeFalsy();
+            expect(failure.result.has_value).toBeFalsy();
+            expect(failure.state.pos).toEqual(0);
+        });
+    });
 });
 
+/* Keep JSLint happy */
 /*global describe it beforeEach expect
- /* P */
+/* P */
