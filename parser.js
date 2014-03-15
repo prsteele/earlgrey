@@ -8,49 +8,37 @@
  *
  * ## Type annotations
  *
- * We use a type annotation system inspired by Haskell's, with
- * modifications to accomodate for Javascript's nonpure
- * behavior. Since Javascript doesn't support currying (without
- * significant effort), we indicate functions of more than one
- * variable using tuple notation. As a contrived example, consider the
- * following.
+ * We use a type annotation system inspired by Haskell's, with the
+ * following modifications to accomodate for Javascript's nonpure
+ * behavior.
  *
- *     var f = function (a, b) {
- *         return function (c) {
- *             return a + b + c;
+ * *   Javascript supports functions with no arguments. We denote this by
+ *     having no type before the arrow. For example,
+ *
+ *         var f = function () {
+ *             return 0;
  *         };
- *     };
  *
- * Assuming we intend for `a`, `b`, and `c` to be floats, we would say
- * the type signature of `f` is `(float, float) -> float -> float`.
+ *     would have type `-> Number`.
  *
- * Javascript supports functions with no arguments. We denote this by
- * having no type before the arrow. For example,
+ * *   Javascript supports functions with no return type. We denote this
+ *     by having no type after the arrow. For example, in
  *
- *     var f = function () {
- *         return 0;
- *     };
+ *         var count = 0;
+ *         var add_to = function (x) {
+ *             count += x;
+ *         };
  *
- * would have type `-> Number`.
+ *     the function `add_to` would have type `Number ->`.
  *
- * Javascript supports functions with no return type. We denote this
- * by having no type after the arrow. For example, in
+ * *   These two notations can be combined. For example, in
  *
- *     var count = 0;
- *     var add_to = function (x) {
- *         count += x;
- *     };
+ *         var count = 0;
+ *         var inc = function () {
+ *             count += 1;
+ *         };
  *
- * the function `add_to` would have type `Number ->`.
- *
- * These two notations can be combined. For example, in
- *
- *     var count = 0;
- *     var inc = function () {
- *         count += 1;
- *     };
- *
- * the function `inc` would have type `->`.
+ *     the function `inc` would have type `->`.
  *
  * ## Parsers
  *
@@ -574,22 +562,22 @@ var P = (function () {
      *     many :: Parser a -> Parser [a]
      */
     var many1 = function (p) {
-        var f = lift(function (li) {
-            if (li.length == 2) {
-                return [li[0]].concat(li[1]);
-            } else {
-                // p is skip. Return the empty list. To see this, note
-                // that if the first p doesn't match, then the plus
-                // fails and this function won't get called. Thus, the
-                // first p matched, and so many(p) returned at least
-                // []. If p is a skip, then plus will aggregate only a
-                // single value -- [] -- after discarding the result
-                // of the first p.
-                return [];
-            }
-        });
-
-        return f(plus(p, many(p)));
+        return fmap(
+            function (li) {
+                if (li.length == 2) {
+                    return [li[0]].concat(li[1]);
+                } else {
+                    // p is skip. Return the empty list. To see this, note
+                    // that if the first p doesn't match, then the plus
+                    // fails and this function won't get called. Thus, the
+                    // first p matched, and so many(p) returned at least
+                    // []. If p is a skip, then plus will aggregate only a
+                    // single value -- [] -- after discarding the result
+                    // of the first p.
+                    return [];
+                }
+            },
+            plus(p, many(p)));
     };
 
     /**
@@ -727,6 +715,45 @@ var P = (function () {
     };
 
     /**
+     * ## `not`
+     *
+     * Creates a new parser that fails when the provided parser
+     * matches and succeeds otherwise; on success, a single character
+     * is consumed.
+     *
+     * Creates a Parser that consumes no input and only succeeds when
+     * the provided parser fails.
+     *
+     * ### Example 1
+     *
+     * Match the division operator "/", but not the start of a comment
+     * "/*".
+     *
+     *     plus(word("/"), peek(not("*")));
+     *
+     * ### Example 2
+     *
+     * Match content encased by a delimeter described by a parser `p`.
+     *
+     *     plus(p, many(not(p)), p);
+     *
+     * ### Type
+     *
+     *     not :: Parser a -> Parser a
+     */
+    var not = function (p) {
+        return function (state) {
+            var result = p(state.copy());
+            
+            if (result.success) {
+                return failure(state);
+            }
+
+            return any(state);
+        };
+    };
+
+    /**
      * ## `prepare`
      *
      * A convenience function for creating a Body and State for some
@@ -766,6 +793,20 @@ var P = (function () {
         };
     };
 
+    /**
+     * ## `fmap`
+     *
+     * Given a function and a parser, lift the function, apply it to
+     * the parser, and return the result.
+     *
+     * ### Type
+     *
+     *     fmap :: (a -> b) -> Parser a -> Parser b
+     */
+    var fmap = function (f, p) {
+        return lift(f)(p);
+    };
+
     return {
         Body: Body,
         State: State,
@@ -788,7 +829,9 @@ var P = (function () {
         option: option,
         any: any,
         peek: peek,
+        not: not,
         prepare: prepare,
-        lift: lift
+        lift: lift,
+        fmap: fmap
     };
 })();

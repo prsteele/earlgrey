@@ -810,6 +810,25 @@ describe("Parsers", function () {
         });
     });
 
+    describe("not", function () {
+        it("fails on a match", function () {
+            var result = P.not(P.word("test"))(state);
+
+            expect(result.success).toBeFalsy();
+            expect(result.result.has_value).toBeFalsy();
+            expect(result.state.pos).toEqual(0);
+        });
+
+        it("succeeds on no match", function () {
+            var result = P.not(P.word("x"))(state);
+
+            expect(result.success).toBeTruthy();
+            expect(result.result.has_value).toBeTruthy();
+            expect(result.result.value).toEqual("t");
+            expect(result.state.pos).toEqual(1);
+        });
+    });
+
     describe("lift", function () {
         it("satisfies its type signature", function () {
             var p = P.word("test");
