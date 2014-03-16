@@ -6,7 +6,7 @@
         var input_text = input.value;
         
         var output = document.querySelector("#result");
-        output.value = earldoc(input_text);
+        output.value = earldoc.parse(input_text);
     };
 })();
 
