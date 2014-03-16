@@ -321,8 +321,6 @@ var earldoc = (function () {
                                 P.skip(P.peek(end_multiline_comment))))),
                    newline)));
 
-
-
     /**
      * ## `doc_comment`
      *
@@ -376,7 +374,7 @@ var earldoc = (function () {
         var result = doc_comments(P.prepare(text));
 
         if (result.success) {
-            return result.result.value;
+            return result.result.value.join("\n\n");
         }
         return result;
     };
