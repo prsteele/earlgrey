@@ -271,8 +271,13 @@ var P = (function () {
      * `.success` attribute will be `false`.
      */
     var Result = function (success, result, state) {
+        // Was the parse successful?
         this.success = success;
+
+        // The result of the parse (should be a Maybe)
         this.result = result;
+
+        // The state after the parse
         this.state = state;
     };
 
@@ -673,7 +678,7 @@ var P = (function () {
             var result = p(state.copy());
 
             if (result.success == false) {
-                return new Result(true, None, result.state);
+                return new Result(true, None, state);
             }
 
             return result;
