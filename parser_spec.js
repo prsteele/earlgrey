@@ -315,6 +315,35 @@ describe("Parsers", function () {
         });
     });
 
+    describe("eof", function () {
+        it("matches the end of a file", function () {
+            var p = P.plus(P.word("asdf"), P.eof);
+            var result = p(P.prepare("asdf"));
+
+            expect(result.success).toBeTruthy();
+            expect(result.result.has_value).toBeTruthy();
+            expect(result.result.value).toEqual(["asdf", ""]);
+            expect(result.state.pos).toEqual(5);
+        });
+
+        it("matches the empty string", function () {
+            var result = P.eof(P.prepare(""));
+
+            expect(result.success).toBeTruthy();
+            expect(result.result.has_value).toBeTruthy();
+            expect(result.result.value).toEqual("");
+            expect(result.state.pos).toEqual(1);
+        });
+
+        it("doesn't match text", function () {
+            var result = P.eof(P.prepare("asdf"));
+
+            expect(result.success).toBeFalsy();
+            expect(result.result.has_value).toBeFalsy();
+            expect(result.state.pos).toEqual(0);
+        });
+    });
+
     describe("many", function () {
         it("matches zero times", function () {
             var result = P.many(P.word("test"))(P.prepare("x"));

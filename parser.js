@@ -437,6 +437,25 @@ var P = (function () {
     var any = none_of("");
 
     /**
+     * ## `eof`
+     *
+     * A parser that matches the end of a file (or the end of a body
+     * of text). It stores the empty string on success.
+     *
+     * ### Type
+     *
+     *     any :: Parser String
+     */
+    var eof = function (state) {
+        if (state.pos == state.body.len) {
+            state.advance();
+            return success("", state);
+        }
+
+        return failure(state);
+    };
+
+    /**
      * ## `many`
      *
      * A parser combinator that creates parsers which match a parser
@@ -833,6 +852,7 @@ var P = (function () {
         skip: skip,
         option: option,
         any: any,
+        eof: eof,
         peek: peek,
         not: not,
         prepare: prepare,
