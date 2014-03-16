@@ -440,7 +440,8 @@ var P = (function () {
      * ## `eof`
      *
      * A parser that matches the end of a file (or the end of a body
-     * of text). It stores the empty string on success.
+     * of text). It stores the empty string on success. The state is
+     * not advanced, and so this can be matched many times.
      *
      * ### Type
      *
@@ -448,7 +449,6 @@ var P = (function () {
      */
     var eof = function (state) {
         if (state.pos == state.body.len) {
-            state.advance();
             return success("", state);
         }
 

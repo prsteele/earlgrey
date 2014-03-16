@@ -323,7 +323,7 @@ describe("Parsers", function () {
             expect(result.success).toBeTruthy();
             expect(result.result.has_value).toBeTruthy();
             expect(result.result.value).toEqual(["asdf", ""]);
-            expect(result.state.pos).toEqual(5);
+            expect(result.state.pos).toEqual(4);
         });
 
         it("matches the empty string", function () {
@@ -332,7 +332,7 @@ describe("Parsers", function () {
             expect(result.success).toBeTruthy();
             expect(result.result.has_value).toBeTruthy();
             expect(result.result.value).toEqual("");
-            expect(result.state.pos).toEqual(1);
+            expect(result.state.pos).toEqual(0);
         });
 
         it("doesn't match text", function () {
