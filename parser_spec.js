@@ -517,6 +517,52 @@ describe("Parsers", function () {
         });
     });
 
+    describe("and", function () {
+        it("can match one parser", function () {
+            var p1 = P.word("test");
+
+            var result = P.and(p1)(state);
+
+            expect(result.success).toBeTruthy();
+            expect(result.result.has_value).toBeTruthy();
+            expect(result.result.value).toEqual("test");
+            expect(result.state.pos).toEqual(4);
+        });
+
+        it("can match many parsers", function () {
+            var p1 = P.word("test");
+            var p2 = P.or(P.word("t"), P.word("s"), P.word("u"));
+
+            var result = P.and(p1, p2)(state);
+
+            expect(result.success).toBeTruthy();
+            expect(result.result.has_value).toBeTruthy();
+            expect(result.result.value).toEqual("test");
+            expect(result.state.pos).toEqual(4);
+        });
+
+        it("can fail with one parser", function () {
+            var p1 = P.word("tset");
+
+            var result = P.and(p1)(state);
+
+            expect(result.success).toBeFalsy();
+            expect(result.result.has_value).toBeFalsy();
+            expect(result.state.pos).toEqual(0);
+        });
+
+        it("can fail with many parsers", function () {
+            var p1 = P.word("test");
+            var p2 = P.word("s");
+
+            var result = P.and(p1, p2)(state);
+
+            expect(result.success).toBeFalsy();
+            expect(result.result.has_value).toBeFalsy();
+            expect(result.state.pos).toEqual(0);
+        });
+    });
+
     describe("many1", function () {
         it("fails on zero matches", function () {
             var result = P.many1(P.word("test"))(P.prepare("x"));

@@ -545,7 +545,7 @@ var P = (function () {
      *
      * ### Type
      *
-     *     plus :: (Parser a, Parser b, ...) -> Parser a|b|...
+     *     or :: (Parser a, Parser b, ...) -> Parser a|b|...
      */
     var or = function () {
         var _args = arguments;
@@ -567,6 +567,46 @@ var P = (function () {
 
             // If we didn't match anything, return the last failed result
             return failure(state);
+        };
+    };
+
+    /**
+     * ## `and`
+     *
+     * A parser combinator that creates a parser which matches the
+     * each of several parsers to succeed. Returns a Parser with the
+     * same type as the first argument provided.
+     *
+     * ### Type
+     *
+     *     and :: (Parser a, Parser b, ...) -> Parser a
+     */
+    var and = function () {
+        var _args = arguments;
+        var _len = _args.length;
+
+        if (_len == 0) {
+            throw "`and` must receive at least one argument";
+        }
+
+        return function (state) {
+            var p = _args[0];
+            var result = p(state.copy());
+
+            if (result.success == false) {
+                return result;
+            }
+
+            for (var i = 1; i < _len; i++) {
+                var q = _args[i];
+                var ret = q(state.copy());
+
+                if (ret.success == false) {
+                    return ret;
+                }
+            }
+
+            return result;
         };
     };
 
@@ -846,6 +886,7 @@ var P = (function () {
         many: many,
         plus: plus,
         or: or,
+        and: and,
         many1: many1,
         separated_by: separated_by,
         skip: skip,
