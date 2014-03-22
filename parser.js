@@ -1,7 +1,7 @@
 /**
- * # ParserLib
+ * # EarlGrey
  *
- * ParserLib defines a small library of parsers and parser combinators
+ * EarlGrey defines a small library of parsers and parser combinators
  * for use in top-down, recursive-descent parsing. Although these
  * parsers are language-agnostic, this library was written for parsing
  * Scheme.
@@ -99,7 +99,6 @@
  *     // has value ["(", "Hello", " ", "world", ")"]
  *     var y = result.result;
  *
- * @module ParserLib
  */
 var P = (function () {
 
