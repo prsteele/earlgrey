@@ -424,6 +424,36 @@ var P = (function () {
     };
 
     /**
+     * ## `iword`
+     *
+     * A parser generator that produces parsers which match a String,
+     * ignoring case.
+     *
+     * ### Example
+     *
+     *     var my_name = iword("patrick");
+     *
+     * ### Type
+     *
+     *     iword :: String -> Parser String
+     */
+    var iword = function (s) {
+        s = s.toLowerCase();
+        var len = s.length;
+        return function (state) {
+            var a = state.pos;
+            var b = a + len;
+
+            if (state.body.text.slice(a, b).toLowerCase() === s) {
+                state.advance_by(len);
+                return success(s, state);
+            }
+
+            return failure(state);
+        };
+    };
+
+    /**
      * ## `any`
      *
      * A parser that matches any single character. This parser can
@@ -883,6 +913,7 @@ var P = (function () {
         one_of: one_of,
         none_of: none_of,
         word: word,
+        iword: iword,
         many: many,
         plus: plus,
         or: or,

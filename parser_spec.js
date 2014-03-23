@@ -291,7 +291,40 @@ describe("Parsers", function () {
         });
 
         it("can fail to match", function () {
-            var result = P.one_of("s")(state);
+            var result = P.word("s")(state);
+            expect(result.success).toBeFalsy();
+            expect(result.result.has_value).toBeFalsy();
+            expect(result.state.pos).toEqual(0);
+        });
+    });
+
+    describe("iword", function () {
+        it("succeeds on empty", function () {
+            var result = P.iword("")(state);
+            expect(result.success).toBeTruthy();
+            expect(result.result.has_value).toBeTruthy();
+            expect(result.result.value).toEqual("");
+            expect(result.state.pos).toEqual(0);
+        });
+
+        it("can match one character", function () {
+            var result = P.iword("T")(state);
+            expect(result.success).toBeTruthy();
+            expect(result.result.has_value).toBeTruthy();
+            expect(result.result.value).toEqual("t");
+            expect(result.state.pos).toEqual(1);
+        });
+
+        it("can match a word", function () {
+            var result = P.iword("TEST")(state);
+            expect(result.success).toBeTruthy();
+            expect(result.result.has_value).toBeTruthy();
+            expect(result.result.value).toEqual("test");
+            expect(result.state.pos).toEqual(4);
+        });
+
+        it("can fail to match", function () {
+            var result = P.iword("s")(state);
             expect(result.success).toBeFalsy();
             expect(result.result.has_value).toBeFalsy();
             expect(result.state.pos).toEqual(0);
