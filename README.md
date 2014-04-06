@@ -6,6 +6,8 @@ for use in top-down, recursive-descent parsing. Although these
 parsers are language-agnostic, this library was written for parsing
 Scheme.
 
+[TOC]
+
 ## Type annotations
 
 We use a type annotation system inspired by Haskell's, with the
@@ -117,20 +119,20 @@ Apply a function to the stored value, if any.
      
 
 
-## `Just`
+## Just
 
 A constructor for `Maybe` values that store a value.
      
 
 
-## `None`
+## None
 
 A `Maybe` that stores no value.
 
      
 
 
-## `just`
+## just
 
 Constructs a new `Maybe` value that stores the given value.
 
@@ -140,13 +142,13 @@ Constructs a new `Maybe` value that stores the given value.
      
 
 
-## `Body`
+## Body
 
 A body of text to be parsed.
      
 
 
-## `Body.at`
+## Body.at
 
 Returns the character at position `i`, or the empty string if
 `i` is out-of-bounds.
@@ -157,13 +159,13 @@ Returns the character at position `i`, or the empty string if
      
 
 
-## `State`
+## State
 
 A `State` represents the position of a parse in a `Body`.
      
 
 
-## `State.toString`
+## State.toString
 
 Returns a `String` representation of this object.
 
@@ -173,7 +175,7 @@ Returns a `String` representation of this object.
      
 
 
-## `State.copy`
+## State.copy
 
 Returns a shallow copy of the `State`, suitable for creating
 `State` objects that can be safely modified by child parsers.
@@ -184,7 +186,7 @@ Returns a shallow copy of the `State`, suitable for creating
      
 
 
-## `State.advance`
+## State.advance
 
 Consumes one unit of input in the `State`.
 
@@ -194,7 +196,7 @@ Consumes one unit of input in the `State`.
      
 
 
-## `State.advance_by`
+## State.advance_by
 
 Consume `n` units of input in the `State`.
 
@@ -204,7 +206,7 @@ Consume `n` units of input in the `State`.
      
 
 
-## `Result`
+## Result
 
 Instances of this class represent the result of a parse. When a
 parse is successful, the `Result` stores a `Maybe a` value,
@@ -215,7 +217,7 @@ unsuccessful, no value (i.e., `null`) is stored and the
      
 
 
-## `Result.toString`
+## Result.toString
 
 Returns a `String` representation of this object.
 
@@ -225,7 +227,7 @@ Returns a `String` representation of this object.
      
 
 
-## `failure`
+## failure
 
 Constructs a failed `Result` at the given `State`.
 
@@ -235,7 +237,7 @@ Constructs a failed `Result` at the given `State`.
      
 
 
-## `success`
+## success
 
 Constructs a successful `Result` with the given value at the
 given `State`.
@@ -246,7 +248,7 @@ given `State`.
      
 
 
-## `one_of`
+## one_of
 
 A parser generator that produces parsers which match one of any
 character in a string.
@@ -261,7 +263,7 @@ character in a string.
      
 
 
-## `none_of`
+## none_of
 
 A parser generator that produces parsers which match one of any
 character not in a String.
@@ -276,7 +278,7 @@ character not in a String.
      
 
 
-## `word`
+## word
 
 A parser generator that produces parsers which match a String
 exactly.
@@ -291,7 +293,7 @@ exactly.
      
 
 
-## `iword`
+## iword
 
 A parser generator that produces parsers which match a String,
 ignoring case.
@@ -306,7 +308,7 @@ ignoring case.
      
 
 
-## `any`
+## any
 
 A parser that matches any single character. This parser can
 only fail if there is no input left to consume.
@@ -317,7 +319,7 @@ only fail if there is no input left to consume.
      
 
 
-## `eof`
+## eof
 
 A parser that matches the end of a file (or the end of a body
 of text). It stores the empty string on success. The state is
@@ -329,7 +331,7 @@ not advanced, and so this can be matched many times.
      
 
 
-## `many`
+## many
 
 A parser combinator that creates parsers which match a parser
 zero or more times.
@@ -344,7 +346,7 @@ zero or more times.
      
 
 
-## `plus`
+## plus
 
 A parser combinator that creates a parser which matches a
 sequence of parsers.
@@ -360,7 +362,7 @@ sequence of parsers.
      
 
 
-## `or`
+## or
 
 A parser combinator that creates a parser which matches the
 first of several alternatives to succeed.
@@ -375,7 +377,7 @@ first of several alternatives to succeed.
      
 
 
-## `and`
+## and
 
 A parser combinator that creates a parser which matches the
 each of several parsers to succeed. Returns a Parser with the
@@ -387,7 +389,7 @@ same type as the first argument provided.
      
 
 
-## `many`
+## many
 
 A parser combinator that creates parsers which match a parser
 one or more times.
@@ -402,7 +404,7 @@ one or more times.
      
 
 
-## `skip`
+## skip
 
 A parser combinator that creates a parser that matches another
 parser but throws away the result.
@@ -420,7 +422,7 @@ parser but throws away the result.
      
 
 
-## `separated_by`
+## separated_by
 
 Creates a parser that matches one or more of one parser with
 each copy separated by a match of another.
@@ -436,7 +438,7 @@ var alt = separated_by(word("!"), word("?"));
      
 
 
-## `option`
+## option
 
 Creates a parser that matches zero or one of a given parser. If
 the parser cannot be matched, the result will store `None`,
@@ -453,7 +455,7 @@ otherwise it will store a `Just`.
      
 
 
-## `peek`
+## peek
 
 Creates a Parser that consumes no input on success. On failure,
 state *is* consumed to allow for useful error messages;
@@ -475,7 +477,7 @@ If a `peek`-created parser will succeed once, it will succeed
      
 
 
-## `not`
+## not
 
 Creates a new parser that fails when the provided parser
 matches and succeeds otherwise; on success, a single character
@@ -503,7 +505,7 @@ Match content encased by a delimeter described by a parser `p`.
      
 
 
-## `prepare`
+## prepare
 
 A convenience function for creating a Body and State for some
 text.
@@ -529,7 +531,7 @@ Parser a -> Parser b`.
      
 
 
-## `fmap`
+## fmap
 
 Given a function and a parser, lift the function, apply it to
 the parser, and return the result.

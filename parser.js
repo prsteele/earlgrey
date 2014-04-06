@@ -6,6 +6,8 @@
  * parsers are language-agnostic, this library was written for parsing
  * Scheme.
  *
+ * [TOC]
+ *
  * ## Type annotations
  *
  * We use a type annotation system inspired by Haskell's, with the
@@ -129,7 +131,7 @@ var P = (function () {
     };
 
    /**
-     * ## `Just`
+     * ## Just
      *
      * A constructor for `Maybe` values that store a value.
      */
@@ -140,7 +142,7 @@ var P = (function () {
     Just.prototype = new Maybe();
 
     /**
-     * ## `None`
+     * ## None
      *
      * A `Maybe` that stores no value.
      *
@@ -148,7 +150,7 @@ var P = (function () {
     var None = new Maybe(false, null);
     
     /**
-     * ## `just`
+     * ## just
      *
      * Constructs a new `Maybe` value that stores the given value.
      *
@@ -161,7 +163,7 @@ var P = (function () {
     };
 
     /**
-     * ## `Body`
+     * ## Body
      *
      * A body of text to be parsed.
      */
@@ -172,7 +174,7 @@ var P = (function () {
     };
 
     /**
-     * ## `Body.at`
+     * ## Body.at
      *
      * Returns the character at position `i`, or the empty string if
      * `i` is out-of-bounds.
@@ -189,7 +191,7 @@ var P = (function () {
     };
 
     /**
-     * ## `State`
+     * ## State
      *
      * A `State` represents the position of a parse in a `Body`.
      */
@@ -200,7 +202,7 @@ var P = (function () {
     };
 
     /**
-     * ## `State.toString`
+     * ## State.toString
      *
      * Returns a `String` representation of this object.
      *
@@ -213,7 +215,7 @@ var P = (function () {
     };
 
     /**
-     * ## `State.copy`
+     * ## State.copy
      *
      * Returns a shallow copy of the `State`, suitable for creating
      * `State` objects that can be safely modified by child parsers.
@@ -230,7 +232,7 @@ var P = (function () {
     };
 
     /**
-     * ## `State.advance`
+     * ## State.advance
      *
      * Consumes one unit of input in the `State`.
      *
@@ -244,7 +246,7 @@ var P = (function () {
     };
 
     /**
-     * ## `State.advance_by`
+     * ## State.advance_by
      *
      *Consume `n` units of input in the `State`.
      *
@@ -258,7 +260,7 @@ var P = (function () {
     };
 
     /**
-     * ## `Result`
+     * ## Result
      *
      * Instances of this class represent the result of a parse. When a
      * parse is successful, the `Result` stores a `Maybe a` value,
@@ -279,7 +281,7 @@ var P = (function () {
     };
 
     /**
-     * ## `Result.toString`
+     * ## Result.toString
      *
      * Returns a `String` representation of this object.
      *
@@ -301,7 +303,7 @@ var P = (function () {
     };
 
     /**
-     * ## `failure`
+     * ## failure
      *
      * Constructs a failed `Result` at the given `State`.
      *
@@ -314,7 +316,7 @@ var P = (function () {
     };
 
     /**
-     * ## `success`
+     * ## success
      *
      * Constructs a successful `Result` with the given value at the
      * given `State`.
@@ -328,7 +330,7 @@ var P = (function () {
     };
 
     /**
-     * ## `one_of`
+     * ## one_of
      *
      * A parser generator that produces parsers which match one of any
      * character in a string.
@@ -357,7 +359,7 @@ var P = (function () {
     };
 
     /**
-     * ## `none_of`
+     * ## none_of
      *
      * A parser generator that produces parsers which match one of any
      * character not in a String.
@@ -393,7 +395,7 @@ var P = (function () {
     };
 
     /**
-     * ## `word`
+     * ## word
      *
      * A parser generator that produces parsers which match a String
      * exactly.
@@ -422,7 +424,7 @@ var P = (function () {
     };
 
     /**
-     * ## `iword`
+     * ## iword
      *
      * A parser generator that produces parsers which match a String,
      * ignoring case.
@@ -452,7 +454,7 @@ var P = (function () {
     };
 
     /**
-     * ## `any`
+     * ## any
      *
      * A parser that matches any single character. This parser can
      * only fail if there is no input left to consume.
@@ -464,7 +466,7 @@ var P = (function () {
     var any = none_of("");
 
     /**
-     * ## `eof`
+     * ## eof
      *
      * A parser that matches the end of a file (or the end of a body
      * of text). It stores the empty string on success. The state is
@@ -483,7 +485,7 @@ var P = (function () {
     };
 
     /**
-     * ## `many`
+     * ## many
      *
      * A parser combinator that creates parsers which match a parser
      * zero or more times.
@@ -521,7 +523,7 @@ var P = (function () {
     };
 
     /**
-     * ## `plus`
+     * ## plus
      *
      * A parser combinator that creates a parser which matches a
      * sequence of parsers.
@@ -562,7 +564,7 @@ var P = (function () {
     };
 
     /**
-     * ## `or`
+     * ## or
      *
      * A parser combinator that creates a parser which matches the
      * first of several alternatives to succeed.
@@ -599,7 +601,7 @@ var P = (function () {
     };
 
     /**
-     * ## `and`
+     * ## and
      *
      * A parser combinator that creates a parser which matches the
      * each of several parsers to succeed. Returns a Parser with the
@@ -639,7 +641,7 @@ var P = (function () {
     };
 
     /**
-     * ## `many`
+     * ## many
      *
      * A parser combinator that creates parsers which match a parser
      * one or more times.
@@ -672,7 +674,7 @@ var P = (function () {
     };
 
     /**
-     * ## `skip`
+     * ## skip
      *
      * A parser combinator that creates a parser that matches another
      * parser but throws away the result.
@@ -701,7 +703,7 @@ var P = (function () {
     };
 
     /**
-     * ## `separated_by`
+     * ## separated_by
      *
      * Creates a parser that matches one or more of one parser with
      * each copy separated by a match of another.
@@ -744,7 +746,7 @@ var P = (function () {
     };
 
     /**
-     * ## `option`
+     * ## option
      *
      * Creates a parser that matches zero or one of a given parser. If
      * the parser cannot be matched, the result will store `None`,
@@ -772,7 +774,7 @@ var P = (function () {
     };
 
     /**
-     * ## `peek`
+     * ## peek
      *
      * Creates a Parser that consumes no input on success. On failure,
      * state *is* consumed to allow for useful error messages;
@@ -806,7 +808,7 @@ var P = (function () {
     };
 
     /**
-     * ## `not`
+     * ## not
      *
      * Creates a new parser that fails when the provided parser
      * matches and succeeds otherwise; on success, a single character
@@ -845,7 +847,7 @@ var P = (function () {
     };
 
     /**
-     * ## `prepare`
+     * ## prepare
      *
      * A convenience function for creating a Body and State for some
      * text.
@@ -885,7 +887,7 @@ var P = (function () {
     };
 
     /**
-     * ## `fmap`
+     * ## fmap
      *
      * Given a function and a parser, lift the function, apply it to
      * the parser, and return the result.
