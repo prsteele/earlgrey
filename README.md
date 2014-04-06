@@ -45,25 +45,23 @@ behavior.
 We define a parser as any function that accepts a `State` and
 returns a `Result`; that is, a function of type `State ->
 Result`. We define a small collection of basic parsers and parser
-generators (of type `a -> Result -> State`). New parsers can be
+generators (of type `a -> State -> Result`). New parsers can be
 defined with parser combinators (discussed below) or simply by
 defining any function of the appropriate type.
 
 Formally, we define the parser type as
     type Parser a = State -> Result (Maybe a)
 
-Parser combinators
-------------------
+### Parser combinators
 
 A parser combinator is any function that, when given one or more
 parsers as input, produces a new parser; that is, any function of
 type `Parser -> Parser`, `(Parser, Parser) -> Parser`, etc. We
 provide a number of parser combinators that can be used to define a
-rish set of parsers. Like parsers, a new parser combinators can be
+rich set of parsers. Like parsers, a new parser combinators can be
 defined simply by defining any function of the appropriate type.
 
-Example
--------
+### Example
 
 First we define several simple parsers to match parenthesis,
 spaces, and letters in the basic English alphabet.
@@ -78,7 +76,7 @@ We can make new parsers to match entire words or a sequence of
 words separated by spaces.
 
     var word        = P.many1(alpha);
-    var sentence    = P.separated_by(alpha, space);
+    var sentence    = P.separated_by(word, space);
 
 Finally, we can match a parenthetical remark by combining these
 parsers.
@@ -102,14 +100,14 @@ We could use this parser as follows.
  
 
 
-## `Maybe`
+## Maybe
 
 A `Maybe` value represents a value that can either have some
 value or no value.
      
 
 
-## `Maybe.map`
+## Maybe.map
 
 Apply a function to the stored value, if any.
 
