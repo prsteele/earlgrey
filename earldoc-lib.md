@@ -7,6 +7,8 @@ the plain text contents of all Javascript comments beginning with
 comments. You should use your favorite markup (or down!) system to
 turn the comments into formatted documents.
 
+[TOC]
+
 ## Implementation notes
 
 This library was written using the EarlGrey parser; in fact, this
