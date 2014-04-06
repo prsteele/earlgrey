@@ -233,8 +233,6 @@ var earldoc = (function () {
      */
     var start_comment = P.or(start_inline_comment, start_multiline_comment);
 
-
-
     /**
      * ## `js_single_quote`
      *
@@ -273,10 +271,15 @@ var earldoc = (function () {
      *
      *     not_doc_comment :: Parser String
      */
-    var not_doc_comment = s(P.many(P.or(js_single_quote,
-                                        js_double_quote,
-                                        inline_comment,
-                                        P.not(start_comment))));
+    var not_doc_comment = 
+            s(P.many(P.or(js_single_quote,
+                          js_double_quote,
+                          inline_comment,
+                          P.plus(start_multiline_comment,
+                                 P.not(P.word("*")),
+                                 P.many(P.not(end_multiline_comment)),
+                                 end_multiline_comment),
+                          P.not(start_comment))));
 
     /**
      * ## `banner`
