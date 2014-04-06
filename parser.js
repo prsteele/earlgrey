@@ -101,7 +101,7 @@
 var P = (function () {
 
     /**
-     * ## `Maybe`
+     * ## Maybe
      *
      * A `Maybe` value represents a value that can either have some
      * value or no value.
@@ -112,7 +112,7 @@ var P = (function () {
     };
 
     /**
-     * ## `Maybe.map`
+     * ## Maybe.map
      *
      * Apply a function to the stored value, if any.
      *
