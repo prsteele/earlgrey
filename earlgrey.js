@@ -100,8 +100,7 @@
  *     var y = result.result;
  *
  */
-var P = (function () {
-
+define(function () {
     /**
      * ## Maybe
      *
@@ -951,4 +950,6 @@ var P = (function () {
         lift: lift,
         fmap: fmap
     };
-})();
+});
+
+/*global define */
