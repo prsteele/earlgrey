@@ -160,13 +160,14 @@ describe("Classes", function () {
         });
 
         it("can be constructed with failure", function () {
-            var result = P.failure();
+            var state = P.prepare("test");
+            var result = P.failure(0, state);
             expect(result.success).toBeFalsy();
             expect(result.result).toBe(P.None);
         });
 
         it("can be constructed with success", function () {
-            var result = P.success(8, state);
+            var result = P.success(8, 0, state);
             expect(result.success).toBeTruthy();
             expect(result.result.has_value).toBeTruthy();
             expect(result.result.value).toEqual(8);
@@ -198,6 +199,7 @@ describe("Parsers", function () {
             expect(result.result.has_value).toBeTruthy();
             expect(result.result.value).toEqual("t");
             expect(result.state.pos).toEqual(1);
+            expect(result.matched()).toEqual("t");
         });
 
         it("can match more than one character", function () {
@@ -213,6 +215,7 @@ describe("Parsers", function () {
                 expect(result.result.has_value).toBeTruthy();
                 expect(result.result.value).toEqual(s[0]);
                 expect(result.state.pos).toEqual(1);
+                expect(result.matched()).toEqual(s[0]);
             }
         });
 

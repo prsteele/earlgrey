@@ -269,7 +269,7 @@ var P = (function () {
      * unsuccessful, no value (i.e., `null`) is stored and the
      * `.success` attribute will be `false`.
      */
-    var Result = function (success, result, state) {
+    var Result = function (success, result, state, start, end) {
         // Was the parse successful?
         this.success = success;
 
@@ -278,6 +278,12 @@ var P = (function () {
 
         // The state after the parse
         this.state = state;
+
+        // The position in the body before the parse
+        this.start = start;
+
+        // The position in the body after the parse.
+        this.end = end;
     };
 
     /**
@@ -302,6 +308,10 @@ var P = (function () {
                 + ": unexpected character '" + this.state.cur + "'");
     };
 
+    Result.prototype.matched = function () {
+        return this.state.body.text.slice(this.start, this.end);
+    };
+
     /**
      * ## failure
      *
@@ -311,8 +321,8 @@ var P = (function () {
      *
      *     failure :: State -> Result None
      */
-    var failure = function (state) {
-        return new Result(false, None, state);
+    var failure = function (start, state) {
+        return new Result(false, None, state, start, state.pos);
     };
 
     /**
@@ -325,8 +335,8 @@ var P = (function () {
      *
      *     success :: (a, State) -> Result (Just a)
      */
-    var success = function (result, state) {
-        return new Result(true, just(result), state);
+    var success = function (result, start, state) {
+        return new Result(true, just(result), state, start, state.pos);
     };
 
     /**
@@ -346,15 +356,16 @@ var P = (function () {
     var one_of = function (s) {
         var len = s.length;
         return function (state) {
+            var start = state.pos;
             var cur = state.cur;
             for (var i = 0; i < len; i++) {
                 if (cur == s[i]) {
                     state.advance();
-                    return success(cur, state);
+                    return success(cur, start, state);
                 }
             }
 
-            return failure(state);
+            return failure(start, state);
         };
     };
 
@@ -375,22 +386,23 @@ var P = (function () {
     var none_of = function (s) {
         var len = s.length;
         return function (state) {
+            var start = state.pos;
             var cur = state.cur;
 
             // Auto-fail at the end of file, since we must consume one
             // unit of input
             if (cur == "") {
-                return failure(state);
+                return failure(start, state);
             }
 
             for (var i = 0; i < len; i++) {
                 if (cur == s[i]) {
-                    return failure(state);
+                    return failure(start, state);
                 }
             }
 
             state.advance();
-            return success(cur, state);
+            return success(cur, start, state);
         };
     };
 
@@ -411,15 +423,16 @@ var P = (function () {
     var word = function (s) {
         var len = s.length;
         return function (state) {
+            var start = state.pos;
             var a = state.pos;
             var b = a + len;
 
             if (state.body.text.slice(a, b) === s) {
                 state.advance_by(len);
-                return success(s, state);
+                return success(s, start, state);
             }
 
-            return failure(state);
+            return failure(start, state);
         };
     };
 
@@ -441,15 +454,16 @@ var P = (function () {
         s = s.toLowerCase();
         var len = s.length;
         return function (state) {
+            var start = state.pos;
             var a = state.pos;
             var b = a + len;
 
             if (state.body.text.slice(a, b).toLowerCase() === s) {
                 state.advance_by(len);
-                return success(s, state);
+                return success(s, start, state);
             }
 
-            return failure(state);
+            return failure(start, state);
         };
     };
 
@@ -477,11 +491,12 @@ var P = (function () {
      *     any :: Parser String
      */
     var eof = function (state) {
+        var start = state.pos;
         if (state.pos == state.body.len) {
-            return success("", state);
+            return success("", start, state);
         }
 
-        return failure(state);
+        return failure(start, state);
     };
 
     /**
@@ -500,6 +515,7 @@ var P = (function () {
      */
     var many = function (p) {
         return function (state) {
+            var start = state.pos;
             var results = [];
 
             var halt = false;
@@ -518,7 +534,7 @@ var P = (function () {
                 }
             }
 
-            return success(results, state);
+            return success(results, start, state);
         };
     };
 
@@ -542,6 +558,7 @@ var P = (function () {
         var _len = _args.length;
 
         return function (state) {
+            var start = state.pos;
             var results = [];
 
             for (var i = 0; i < _len; i++) {
@@ -559,7 +576,7 @@ var P = (function () {
                 state = ret.state;
             }
 
-            return success(results, state);
+            return success(results, start, state);
         };
     };
 
@@ -582,6 +599,7 @@ var P = (function () {
         var _len = arguments.length;
 
         return function (state) {
+            var start = state.pos;
             var last = null;
             for (var i = 0; i < _len; i++) {
                 var s = state.copy();
@@ -596,7 +614,7 @@ var P = (function () {
             }
 
             // If we didn't match anything, return the last failed result
-            return failure(state);
+            return failure(start, state);
         };
     };
 
@@ -641,18 +659,18 @@ var P = (function () {
     };
 
     /**
-     * ## many
+     * ## many1
      *
      * A parser combinator that creates parsers which match a parser
      * one or more times.
      *
      * ### Example
      *
-     *     var how_exciting = many(word("!"));
+     *     var how_exciting = many1(word("!"));
      *
      * ### Type
      *
-     *     many :: Parser a -> Parser [a]
+     *     many1 :: Parser a -> Parser [a]
      */
     var many1 = function (p) {
         return fmap(
@@ -692,13 +710,14 @@ var P = (function () {
      */
     var skip = function (p) {
         return function (state) {
+            var start = state.pos;
             var result = p(state);
 
             if (result.success == false) {
                 return result;
             }
 
-            return new Result(true, None, result.state);
+            return new Result(true, None, result.state, start, state.pos);
         };
     };
 
@@ -763,10 +782,11 @@ var P = (function () {
      */
     var option = function (p) {
         return function (state) {
+            var start = state.pos;
             var result = p(state.copy());
 
             if (result.success == false) {
-                return new Result(true, None, state);
+                return new Result(true, None, state, start, state.pos);
             }
 
             return result;
@@ -836,10 +856,11 @@ var P = (function () {
      */
     var not = function (p) {
         return function (state) {
+            var start = state.pos;
             var result = p(state.copy());
             
             if (result.success) {
-                return failure(state);
+                return failure(start, state);
             }
 
             return any(state);
