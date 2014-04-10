@@ -1,3 +1,18 @@
 [submodule "jasmine"]
 	path = jasmine
 	url = https://github.com/pivotal/jasmine.git
+[submodule "lib/requirejs"]
+	path = lib/requirejs
+	url = https://github.com/jrburke/requirejs.git
+[submodule "lib/earlgrey"]
+	path = lib/earlgrey
+	url = ssh://git@bitbucket.org/prsteele/earlgrey.git
+[submodule "lib/r"]
+	path = lib/r
+	url = https://github.com/jrburke/r.js
+[submodule "lib/jasmine"]
+	path = lib/jasmine
+	url = https://github.com/pivotal/jasmine.git
+[submodule "lib/almond"]
+	path = lib/almond
+	url = https://github.com/jrburke/almond

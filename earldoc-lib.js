@@ -32,7 +32,8 @@
  *
  *     earldoc :: {String: Function}
  */
-var earldoc = (function () {
+define(["lib/earlgrey/earlgrey"], function (earlgrey) {
+    var P = earlgrey;
 
     /**
      * ## `join`
@@ -387,6 +388,6 @@ var earldoc = (function () {
         not_doc_comment: not_doc_comment,
         doc_comments: doc_comments
     };
-})();
+});
 
-/*global P*/
+/*global define */
