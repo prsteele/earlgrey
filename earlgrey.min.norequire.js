@@ -1396,7 +1396,5 @@ require(["earlgrey"]);
     //this snippet. Ask almond to synchronously require the
     //module value for 'main' here and return it as the
     //value to use for the public API for the built file.
-    earlgrey = libGlobalName;
-
     return require('earlgrey');
 }));

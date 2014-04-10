@@ -389,18 +389,18 @@ same type as the first argument provided.
      
 
 
-## many
+## many1
 
 A parser combinator that creates parsers which match a parser
 one or more times.
 
 ### Example
 
-    var how_exciting = many(word("!"));
+    var how_exciting = many1(word("!"));
 
 ### Type
 
-    many :: Parser a -> Parser [a]
+    many1 :: Parser a -> Parser [a]
      
 
 
