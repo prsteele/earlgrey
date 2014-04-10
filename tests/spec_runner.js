@@ -5,7 +5,7 @@
             "jasmine": "lib/jasmine/lib/jasmine-core/jasmine",
             "jasmine-html": "lib/jasmine/lib/jasmine-core/jasmine-html",
             "boot": "lib/jasmine/lib/jasmine-core/boot",
-            "earlgrey": "earlgrey",
+            "earlgrey": "earlgrey.min",
             "earlgrey_spec": "tests/earlgrey_spec"
         },
         shim: {
