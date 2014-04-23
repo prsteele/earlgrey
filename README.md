@@ -441,8 +441,9 @@ var alt = separated_by(word("!"), word("?"));
 ## option
 
 Creates a parser that matches zero or one of a given parser. If
-the parser cannot be matched, the result will store `None`,
-otherwise it will store a `Just`.
+the parser matches, a `Just` is stored. If the parser fails to
+match and a default value is stored, that value is stored as a
+`Just`. Otherwise, a `None` is stored..
 
 ### Example
 
@@ -452,6 +453,7 @@ otherwise it will store a `Just`.
 ### Type
 
     option :: Parser a -> Parser a
+    option :: (Parser a, b) -> Parser (a|b)
      
 
 
