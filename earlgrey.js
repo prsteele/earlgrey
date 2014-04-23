@@ -767,8 +767,9 @@ define(function () {
      * ## option
      *
      * Creates a parser that matches zero or one of a given parser. If
-     * the parser cannot be matched, the result will store `None`,
-     * otherwise it will store a `Just`.
+     * the parser matches, a `Just` is stored. If the parser fails to
+     * match and a default value is stored, that value is stored as a
+     * `Just`. Otherwise, a `None` is stored..
      *
      * ### Example
      *
@@ -778,14 +779,20 @@ define(function () {
      * ### Type
      *
      *     option :: Parser a -> Parser a
+     *     option :: (Parser a, b) -> Parser (a|b)
      */
-    var option = function (p) {
+    var option = function (p, default_value) {
+        var fail_value = None;
+        if (default_value != undefined) {
+            fail_value = new Just(default_value);
+        }
+        
         return function (state) {
             var start = state.pos;
             var result = p(state.copy());
 
             if (result.success == false) {
-                return new Result(true, None, state, start, state.pos);
+                return new Result(true, fail_value, state, start, state.pos);
             }
 
             return result;

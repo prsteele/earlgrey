@@ -903,6 +903,26 @@ define(["earlgrey"], function (earlgrey) {
                 expect(result.result.value).toEqual("test");
                 expect(result.state.pos).toEqual(4);
             });
+
+            it("matches zero times with a default value", function () {
+                var p = P.word("x");
+
+                var result = P.option(p, 8)(state);
+                expect(result.success).toBeTruthy();
+                expect(result.result.has_value).toBeTruthy();
+                expect(result.result.value).toEqual(8);
+                expect(result.state.pos).toEqual(0);
+            });
+
+            it("matches one time with a default value", function () {
+                var p = P.word("test");
+
+                var result = P.option(p, 8)(state);
+                expect(result.success).toBeTruthy();
+                expect(result.result.has_value).toBeTruthy();
+                expect(result.result.value).toEqual("test");
+                expect(result.state.pos).toEqual(4);
+            });
         });
 
         describe("peek", function () {
