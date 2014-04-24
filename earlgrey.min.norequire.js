@@ -1391,7 +1391,7 @@ define('earlgrey',[],function () {
         return function (p) {
             return function (state) {
                 var result = p(state);
-                result.result.map(f);
+                result.result.map(f, result);
                 return result;
             };
         };
