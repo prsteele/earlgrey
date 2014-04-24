@@ -111,11 +111,13 @@ value or no value.
 
 ## Maybe.map
 
-Apply a function to the stored value, if any.
+Apply a function to the stored value, if any. Optionally pass
+in the Result context.
 
 ### Type
 
     Maybe.map :: (a -> b) -> Maybe a -> Maybe b
+    Maybe.map :: ((a -> b), Result a) -> Maybe a -> Maybe b
      
 
 
@@ -155,7 +157,18 @@ Returns the character at position `i`, or the empty string if
 
 ### Type
 
-    Body.at :: Number -> String
+    Body.at :: int -> String
+     
+
+
+## Body.line_column
+
+Returns the line (1-based) and column (0-based) of a given
+character index.
+
+### Type
+
+    Body.at :: int -> {line: int, column: int}
      
 
 

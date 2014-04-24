@@ -551,15 +551,17 @@ define('earlgrey',[],function () {
     /**
      * ## Maybe.map
      *
-     * Apply a function to the stored value, if any.
+     * Apply a function to the stored value, if any. Optionally pass
+     * in the Result context.
      *
      * ### Type
      *
      *     Maybe.map :: (a -> b) -> Maybe a -> Maybe b
+     *     Maybe.map :: ((a -> b), Result a) -> Maybe a -> Maybe b
      */
-    Maybe.prototype.map = function (f) {
+    Maybe.prototype.map = function (f, result) {
         if (this.has_value) {
-            this.value = f(this.value);
+            this.value = f(this.value, result);
         }
 
         return this;
@@ -606,6 +608,17 @@ define('earlgrey',[],function () {
         this.name = name;
         this.text = text;
         this.len = text.length;
+
+        var lines = this.text.split("\n");
+
+        // Compute the aggregate character counts at the beginning of
+        // each line
+        this._char_counts = [0];
+        for (var i = 0; i < lines.length - 1; i += 1) {
+            var line = lines[i];
+            var len = this.char_counts[i] + line.length;
+            this._char_counts.push(len);
+        }
     };
 
     /**
@@ -616,13 +629,48 @@ define('earlgrey',[],function () {
      *
      * ### Type
      *
-     *     Body.at :: Number -> String
+     *     Body.at :: int -> String
      */
     Body.prototype.at = function (i) {
         if (i < this.len) {
             return this.text[i];
         }
         return "";
+    };
+
+    /**
+     * ## Body.line_column
+     *
+     * Returns the line (1-based) and column (0-based) of a given
+     * character index.
+     *
+     * ### Type
+     *
+     *     Body.at :: int -> {line: int, column: int}
+     */
+    Body.prototype.line_column = function (i) {
+        // Find the greatest line number with a total character count
+        // less than or equal to i.
+        var L = 0;
+        var U = this._char_counts.length - 1;
+        while (L < U) {
+            var M = Math.floor((L + U) / 2);
+
+            if (this._char_counts[M] <= i) {
+                // If L == M, then L + 1 == U and we conclude L is the
+                // greatest line with a character count less than or
+                // equal to i. Otherwise, increase L.
+                if (L == M) {
+                    U = L;
+                } else {
+                    L = M;
+                }
+            } else {
+                U = M;
+            }
+        }
+
+        return {line: L + 1, column: i % this._char_counts[L]};
     };
 
     /**
