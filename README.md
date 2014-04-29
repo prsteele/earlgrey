@@ -106,7 +106,7 @@ We could use this parser as follows.
 
 A `Maybe` value represents a value that can either have some
 value or no value.
-     
+ 
 
 
 ## Maybe.map
@@ -118,20 +118,20 @@ in the Result context.
 
     Maybe.map :: (a -> b) -> Maybe a -> Maybe b
     Maybe.map :: ((a -> b), Result a) -> Maybe a -> Maybe b
-     
+ 
 
 
 ## Just
 
 A constructor for `Maybe` values that store a value.
-     
+ 
 
 
 ## None
 
 A `Maybe` that stores no value.
 
-     
+ 
 
 
 ## just
@@ -141,13 +141,13 @@ Constructs a new `Maybe` value that stores the given value.
 ### Type
 
     just :: a -> Just a
-     
+ 
 
 
 ## Body
 
 A body of text to be parsed.
-     
+ 
 
 
 ## Body.at
@@ -158,7 +158,7 @@ Returns the character at position `i`, or the empty string if
 ### Type
 
     Body.at :: int -> String
-     
+ 
 
 
 ## Body.line_column
@@ -169,13 +169,13 @@ character index.
 ### Type
 
     Body.at :: int -> {line: int, column: int}
-     
+ 
 
 
 ## State
 
 A `State` represents the position of a parse in a `Body`.
-     
+ 
 
 
 ## State.toString
@@ -185,7 +185,7 @@ Returns a `String` representation of this object.
 ### Type
 
     State.toString :: -> String
-     
+ 
 
 
 ## State.copy
@@ -196,7 +196,7 @@ Returns a shallow copy of the `State`, suitable for creating
 ### Type
 
     State.copy :: -> State
-     
+ 
 
 
 ## State.advance
@@ -206,7 +206,7 @@ Consumes one unit of input in the `State`.
 ### Type
 
     State.advance :: ->
-     
+ 
 
 
 ## State.advance_by
@@ -216,7 +216,7 @@ Consume `n` units of input in the `State`.
 ### Type
 
     State.advance_by :: Number ->
-     
+ 
 
 
 ## Result
@@ -227,7 +227,7 @@ where storing `none` indicates that no value was returned, and
 the `.success` attribute will be `true`. When the parse is
 unsuccessful, no value (i.e., `null`) is stored and the
 `.success` attribute will be `false`.
-     
+ 
 
 
 ## Result.toString
@@ -237,7 +237,7 @@ Returns a `String` representation of this object.
 ### Type
 
     Result.toString :: -> String
-     
+ 
 
 
 ## failure
@@ -247,7 +247,7 @@ Constructs a failed `Result` at the given `State`.
 ### Type
 
     failure :: State -> Result None
-     
+ 
 
 
 ## success
@@ -258,7 +258,7 @@ given `State`.
 ### Type
 
     success :: (a, State) -> Result (Just a)
-     
+ 
 
 
 ## one_of
@@ -273,7 +273,7 @@ character in a string.
 ### Type
 
     one_of :: String -> Parser String
-     
+ 
 
 
 ## none_of
@@ -288,7 +288,7 @@ character not in a String.
 ### Type
 
     none_of :: String -> Parser String
-     
+ 
 
 
 ## word
@@ -303,7 +303,7 @@ exactly.
 ### Type
 
     word :: String -> Parser String
-     
+ 
 
 
 ## iword
@@ -318,7 +318,7 @@ ignoring case.
 ### Type
 
     iword :: String -> Parser String
-     
+ 
 
 
 ## any
@@ -329,7 +329,7 @@ only fail if there is no input left to consume.
 ### Type
 
     any :: Parser String
-     
+ 
 
 
 ## eof
@@ -341,7 +341,7 @@ not advanced, and so this can be matched many times.
 ### Type
 
     any :: Parser String
-     
+ 
 
 
 ## many
@@ -356,7 +356,7 @@ zero or more times.
 ### Type
 
     many :: Parser a -> Parser [a]
-     
+ 
 
 
 ## plus
@@ -372,7 +372,7 @@ sequence of parsers.
 ### Type
 
     plus :: (Parser a, Parser b, ...) -> Parser [a, b, ...]
-     
+ 
 
 
 ## or
@@ -387,7 +387,7 @@ first of several alternatives to succeed.
 ### Type
 
     or :: (Parser a, Parser b, ...) -> Parser a|b|...
-     
+ 
 
 
 ## and
@@ -399,7 +399,7 @@ same type as the first argument provided.
 ### Type
 
     and :: (Parser a, Parser b, ...) -> Parser a
-     
+ 
 
 
 ## many1
@@ -414,7 +414,7 @@ one or more times.
 ### Type
 
     many1 :: Parser a -> Parser [a]
-     
+ 
 
 
 ## skip
@@ -432,7 +432,7 @@ parser but throws away the result.
 
     skip :: Parser a -> Parser none
 
-     
+ 
 
 
 ## separated_by
@@ -448,7 +448,7 @@ var alt = separated_by(word("!"), word("?"));
 ### Type
 
     separated_by :: Parser a -> Parser b -> Parser [(a|b)]
-     
+ 
 
 
 ## option
@@ -467,7 +467,7 @@ match and a default value is stored, that value is stored as a
 
     option :: Parser a -> Parser a
     option :: (Parser a, b) -> Parser (a|b)
-     
+ 
 
 
 ## peek
@@ -489,7 +489,7 @@ If a `peek`-created parser will succeed once, it will succeed
 ### Type
 
     peek :: Parser a -> Parser a
-     
+ 
 
 
 ## not
@@ -517,7 +517,7 @@ Match content encased by a delimeter described by a parser `p`.
 ### Type
 
     not :: Parser a -> Parser a
-     
+ 
 
 
 ## prepare
@@ -532,7 +532,7 @@ text.
 ### Type
 
     prepare :: String -> State
-     
+ 
 
 
 ## `lift`
@@ -543,7 +543,7 @@ Parser a -> Parser b`.
 ### Type
 
     lift :: (a -> b) -> (Parser a -> Parser b)
-     
+ 
 
 
 ## fmap
@@ -554,4 +554,4 @@ the parser, and return the result.
 ### Type
 
     fmap :: (a -> b) -> Parser a -> Parser b
-     
+ 

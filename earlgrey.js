@@ -180,7 +180,7 @@ var Body = function (name, text) {
     this._char_counts = [0];
     for (var i = 0; i < lines.length - 1; i += 1) {
         var line = lines[i];
-        var len = this.char_counts[i] + line.length;
+        var len = this._char_counts[i] + line.length;
         this._char_counts.push(len);
     }
 };
