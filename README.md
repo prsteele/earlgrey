@@ -1,11 +1,24 @@
+
 # EarlDoc
 
+A command line script for calling into `earldoc-lib.js`.
+
 EarlDoc is a documentation extraction system for Javascript, or any
-language that uses `/* ... */` style multi-line comments. Given a
-source file, EarlDoc extracts all comments of the form `/**
-... */`, removing any leading `*` forming a banner in the
-comment. That's it -- this tool doesn't apply any transformations to
-the extracted comments beyond stripping `*` banners.
+language that uses slash-star, star-slash multi-line
+comments. Given a source file, EarlDoc extracts all comments of the
+form `/** ... *_/` (with the underscore removed), removing any
+leading `*` forming a banner in the comment. That's it -- this tool
+doesn't apply any transformations to the extracted comments beyond
+stripping `*` banners.
+
+*Note* Throughout we use the convention of `*_/` as the ending
+multi-line comment delimiter to avoid terminating Javascript
+comments prematurely. You should _not_ do this in your own code, as
+it is not legal Javascript.
+
+## Usage
+
+    node earldoc.js < INFILE > OUTFILE
 
 ## Example
 
@@ -15,7 +28,7 @@ Given Javascript source code
      * Greet a user.
      *
      * @param {String} name The name of the user.
-     */
+     *_/
     var say_hello = function (name) {
         return "Hello, " + name + "!";
     }
@@ -34,13 +47,13 @@ comment to precede a function. The code
 
     /**
      * This file defines the function `say_hello`.
-     */
+     *_/
 
     /**
      * Greet a user.
      *
      * @param {String} name The name of the user.
-     */
+     *_/
     var say_hello = function (name) {
         return "Hello, " + name + "!";
     }
@@ -52,3 +65,4 @@ would produce
     Greet a user.
     
     @param {String} name The name of the user.
+ 
