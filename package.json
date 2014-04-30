@@ -8,9 +8,8 @@
     "description": "A Javascript documentation extraction tool.",
     "homepage": "https://bitbucket.org/prsteele/earldoc",
     "license": "MIT",
-    "files": ["./earldoc-lib.js"],
     "main": "./earldoc-lib.js",
-    "bin": "./bin/earldoc.js",
+    "bin": {"earldoc": "./bin/earldoc.js"},
     "repository": {
         "type": "git",
         "url": "https://bitbucket.org/prsteele/earldoc"
