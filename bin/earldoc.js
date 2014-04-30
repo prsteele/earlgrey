@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 /**
  * # EarlDoc
  *
@@ -67,7 +69,7 @@
  *     @param {String} name The name of the user.
  */
 
-var earldoc = require("./earldoc-lib.js");
+var earldoc = require("../earldoc-lib.js");
 
 process.stdin.setEncoding('utf8');
 

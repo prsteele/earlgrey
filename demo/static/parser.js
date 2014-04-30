@@ -1,1 +1,0 @@
-../../../EarlGrey/parser.js

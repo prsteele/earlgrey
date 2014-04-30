@@ -1,1 +1,0 @@
-../../earldoc-lib.js
