@@ -1,17 +1,18 @@
 {
     "name": "earldoc",
-    "author": {
-        "name": "Patrick Steele",
-        "email": "steele.pat@gmail.com"
-    },
     "version": "0.0.1",
     "description": "A Javascript documentation extraction tool.",
-    "homepage": "https://bitbucket.org/prsteele/earldoc",
-    "license": "MIT",
-    "main": "./earldoc-lib.js",
-    "bin": {"earldoc": "./bin/earldoc.js"},
+    "main": "earldoc-lib-bundle.js",
+    "bin": {
+        "earldoc": "bin/earldoc.js"
+    },
+    "directories": {
+        "test": "tests"
+    },
     "repository": {
         "type": "git",
-        "url": "https://bitbucket.org/prsteele/earldoc"
-    }
+        "url": "https://bitbucket.org/prsteele/earldoc.git"
+    },
+    "author": "Patrick Steele",
+    "license": "MIT"
 }
