@@ -4,15 +4,3 @@
 [submodule "lib/jasmine"]
 	path = lib/jasmine
 	url = https://github.com/pivotal/jasmine.git
-[submodule "lib/earldoc"]
-	path = lib/earldoc
-	url = ssh://git@bitbucket.org/prsteele/earldoc.git
-[submodule "lib/requirejs"]
-	path = lib/requirejs
-	url = https://github.com/jrburke/requirejs.git
-[submodule "lib/r"]
-	path = lib/r
-	url = https://github.com/jrburke/r.js
-[submodule "lib/almond"]
-	path = lib/almond
-	url = https://github.com/jrburke/almond
