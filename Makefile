@@ -7,7 +7,7 @@ README.md: earlgrey.js bin/earldoc.js
 	nodejs bin/earldoc.js < bin/earldoc.js >> $@
 
 earlgrey-bundle.js: earlgrey.js
-	browserify -r ./earlgrey.js -o $@
+	$(BROWSERIFY) -r ./earlgrey.js -o $@
 
 earldoc-lib-bundle.js: earlgrey.js earldoc-lib.js
 	$(BROWSERIFY) -r ./earlgrey.js -r ./earldoc-lib.js -o $@
