@@ -33,7 +33,7 @@ require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof requ
  *
  *     earldoc :: {String: Function}
  */
-var P = require("./lib/earlgrey/earlgrey.js");
+var P = require("./earlgrey.js");
 
 /**
  * ## `join`
@@ -389,7 +389,7 @@ exports.doc_comments = doc_comments;
 
 /*global require exports */
 
-},{"./lib/earlgrey/earlgrey.js":"/lib/earlgrey/earlgrey.js"}],"/lib/earlgrey/earlgrey.js":[function(require,module,exports){
+},{"./earlgrey.js":"/earlgrey.js"}],"/earlgrey.js":[function(require,module,exports){
 /**
  * # EarlGrey
  *

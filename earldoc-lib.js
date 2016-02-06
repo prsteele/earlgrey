@@ -32,7 +32,7 @@
  *
  *     earldoc :: {String: Function}
  */
-var P = require("./lib/earlgrey/earlgrey.js");
+var P = require("./earlgrey.js");
 
 /**
  * ## `join`
