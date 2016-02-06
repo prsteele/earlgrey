@@ -398,8 +398,6 @@ exports.doc_comments = doc_comments;
  * parsers are language-agnostic, this library was written for parsing
  * Scheme.
  *
- * [TOC]
- *
  * ## Type annotations
  *
  * We use a type annotation system inspired by Haskell's, with the
