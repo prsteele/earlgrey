@@ -1,4 +1,3 @@
-
 # EarlDoc
 
 A command line script for calling into `earldoc-lib.js`.
@@ -19,6 +18,15 @@ it is not legal Javascript.
 ## Usage
 
     node earldoc.js < INFILE > OUTFILE
+    
+## Building
+
+You can build the library with ``make``. However, you'll need to
+install ``browserify`` via NodeJS (or otherwise). Modify the
+``Makefile`` if you install ``browserify`` non-locally. Note that the
+existing macro definition in the ``Makefile`` assumes ``browserify``
+was installed via ``npm install browserify`` being run in this
+directory.
 
 ## Example
 
