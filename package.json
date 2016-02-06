@@ -1,0 +1,15 @@
+{
+    "name": "earldoc",
+    "version": "0.0.1",
+    "description": "A Javascript documentation extraction tool.",
+    "main": "earldoc-lib.js",
+    "bin": {
+        "earldoc": "bin/earldoc.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://bitbucket.org/prsteele/earldoc.git"
+    },
+    "author": "Patrick Steele",
+    "license": "MIT"
+}
