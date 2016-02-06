@@ -5,7 +5,9 @@ require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof requ
  * EarlGrey defines a small library of parsers and parser combinators
  * for use in top-down, recursive-descent parsing. Although these
  * parsers are language-agnostic, this library was written for parsing
- * Scheme.
+ * Scheme. However, it has also been used to create the accompanying
+ * EarlDoc documentation extraction tool for extracting Javascript
+ * comments.
  *
  * ## Type annotations
  *
